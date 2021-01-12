@@ -55,7 +55,7 @@ func (r *Reconciler) statefulsets() runtime.Object {
 func (r *Reconciler) containers() []apiv1.Container {
 	containers := []apiv1.Container{
 		{
-			Name:            "controller",
+			Name:            componentName,
 			Image:           *r.Config.Spec.Image,
 			ImagePullPolicy: r.Config.Spec.ImagePullPolicy,
 			Args: []string{

@@ -34,10 +34,10 @@ func DefaultRollingUpdateStrategy() appsv1.DeploymentStrategy {
 }
 
 // DefaultReadinessProbe returns the default readiness probe values
-func DefaultReadinessProbe(path string, port, failureThreshold, timeoutSeconds int) *apiv1.Probe {
+func DefaultReadinessProbe(path string, port, initialDelaySeconds, timeoutSeconds int) *apiv1.Probe {
 	return &apiv1.Probe{
-		TimeoutSeconds:   int32(timeoutSeconds),
-		FailureThreshold: int32(failureThreshold),
+		TimeoutSeconds:      int32(timeoutSeconds),
+		InitialDelaySeconds: int32(initialDelaySeconds),
 		Handler: apiv1.Handler{
 			HTTPGet: &apiv1.HTTPGetAction{
 				Path: path,

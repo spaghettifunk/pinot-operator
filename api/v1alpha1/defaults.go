@@ -54,6 +54,9 @@ func SetDefaults(config *Pinot) {
 	if config.Spec.Broker.Resources == nil {
 		config.Spec.Broker.Resources = defaultResources
 	}
+	if config.Spec.Broker.JvmOptions == "" {
+		config.Spec.Broker.JvmOptions = "-Xms256M -Xmx1G -XX:+UseG1GC -XX:MaxGCPauseMillis=200"
+	}
 	// server
 	if config.Spec.Server.Resources == nil {
 		config.Spec.Server.Resources = defaultResources

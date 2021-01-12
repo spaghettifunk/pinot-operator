@@ -84,9 +84,3 @@ func (r *Reconciler) selector(name string) map[string]string {
 		"component": name,
 	}
 }
-
-func (r *Reconciler) annotations() map[string]string {
-	return map[string]string{
-		"app.kubernetes.io/name": componentName,
-	}
-}
