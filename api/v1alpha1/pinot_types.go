@@ -156,8 +156,11 @@ type BrokerConfiguration struct {
 // ServerConfiguration defines the k8s spec configuration for the Pinot server
 type ServerConfiguration struct {
 	CommonResourceConfiguration `json:",inline"`
+	DiskSize                    string `json:"diskSize,omitempty"`
 	// Optional: jvm options for pinot jvm processes
-	JvmOptions string `json:"jvm.options,omitempty"`
+	JvmOptions string                       `json:"jvm.options,omitempty"`
+	Service    ServiceResourceConfiguration `json:"service,omitempty"`
+	AdminPort  int                          `json:"adminPort,omitport"`
 }
 
 // ZookeeperConfiguration defines the desired state of Zookeeper

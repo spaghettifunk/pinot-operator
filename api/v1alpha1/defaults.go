@@ -61,6 +61,9 @@ func SetDefaults(config *Pinot) {
 	if config.Spec.Server.Resources == nil {
 		config.Spec.Server.Resources = defaultResources
 	}
+	if config.Spec.Server.DiskSize == "" {
+		config.Spec.Server.DiskSize = "4G"
+	}
 
 	// TODO: Zookeeper
 	// if config.Spec.Zookeeper.Image == nil {
