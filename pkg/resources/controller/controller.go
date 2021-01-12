@@ -45,12 +45,17 @@ func (r *Reconciler) Reconcile(log logr.Logger) error {
 	log.Info("Reconciling")
 
 	for _, res := range []resources.ResourceWithDesiredState{
-		{Resource: r.configmap, DesiredState: desiredState},
-		{Resource: r.statefulsets, DesiredState: desiredState},
-		{Resource: r.service, DesiredState: desiredState},
-		{Resource: r.serviceHeadless, DesiredState: desiredState},
-		{Resource: r.serviceExternal, DesiredState: desiredState},
+		{Name: configmapName, Resource: r.configmap, DesiredState: desiredState},
+		{Name: statefulsetName, Resource: r.statefulsets, DesiredState: desiredState},
+		{Name: serviceName, Resource: r.service, DesiredState: desiredState},
+		{Name: serviceHeadlessName, Resource: r.serviceHeadless, DesiredState: desiredState},
+		{Name: serviceExternalName, Resource: r.serviceExternal, DesiredState: desiredState},
 	} {
+		// skip creation of resource
+		if r.Config.Spec.Controller.ExternalService.Enabled == false && res.Name == serviceExternalName {
+			continue
+		}
+		// reconcile resource
 		o := res.Resource()
 		err := k8sutil.Reconcile(log, r.Client, o, res.DesiredState)
 		if err != nil {

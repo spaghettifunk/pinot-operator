@@ -11,6 +11,7 @@ import (
 
 // ResourceWithDesiredState defines the desidered state based on the resources
 type ResourceWithDesiredState struct {
+	Name         string
 	Resource     Resource
 	DesiredState k8sutil.DesiredState
 }

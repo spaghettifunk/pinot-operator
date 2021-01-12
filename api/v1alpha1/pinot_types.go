@@ -103,6 +103,7 @@ type ServiceResourceConfiguration struct {
 
 // ExternalServiceResourceConfiguration defines some definition for a service resource
 type ExternalServiceResourceConfiguration struct {
+	Enabled     bool              `json:"enabled,omitempty"`
 	Annotations map[string]string `json:"annotations,omitempty"`
 	Type        string            `json:"type,omitempty"`
 	Port        int               `json:"port,omitempty"`
