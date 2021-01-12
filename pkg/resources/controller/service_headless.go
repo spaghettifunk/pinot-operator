@@ -15,7 +15,7 @@ func (r *Reconciler) serviceHeadless() runtime.Object {
 			ClusterIP: "None",
 			Selector:  r.selector(componentName),
 			Ports: []apiv1.ServicePort{
-				apiv1.ServicePort{
+				{
 					Port: int32(r.Config.Spec.Controller.Service.Port),
 				},
 			},

@@ -14,7 +14,7 @@ func (r *Reconciler) service() runtime.Object {
 			Type:     apiv1.ServiceTypeClusterIP,
 			Selector: r.selector(componentName),
 			Ports: []apiv1.ServicePort{
-				apiv1.ServicePort{
+				{
 					Port: int32(r.Config.Spec.Controller.Service.Port),
 				},
 			},
