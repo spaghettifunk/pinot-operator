@@ -9,15 +9,15 @@ import (
 
 func (r *Reconciler) serviceHeadless() runtime.Object {
 	return &apiv1.Service{
-		ObjectMeta: templates.ObjectMetaWithAnnotations(serviceName, r.labels(), templates.DefaultAnnotations(string(r.Config.Spec.Version)), r.Config),
+		ObjectMeta: templates.ObjectMetaWithAnnotations(serviceHeadlessName, r.labels(), templates.DefaultAnnotations(string(r.Config.Spec.Version)), r.Config),
 		Spec: apiv1.ServiceSpec{
-			Type: apiv1.ServiceTypeClusterIP,
-			// TODO: fix hardcoded values
-			Selector: map[string]string{
-				"pinot.io/controller-component": componentName,
-			},
+			Type:      apiv1.ServiceTypeClusterIP,
+			ClusterIP: "None",
+			Selector:  r.selector(componentName),
 			Ports: []apiv1.ServicePort{
-				templates.DefaultServicePort("http", r.Config.Spec.Controller.Service.Port, r.Config.Spec.Controller.Service.Port),
+				apiv1.ServicePort{
+					Port: int32(r.Config.Spec.Controller.Service.Port),
+				},
 			},
 		},
 	}

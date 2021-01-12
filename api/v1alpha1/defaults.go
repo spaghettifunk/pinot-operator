@@ -1,6 +1,8 @@
 package v1alpha1
 
 import (
+	"fmt"
+
 	"github.com/spaghettifunk/pinot-operator/pkg/util"
 	"k8s.io/apimachinery/pkg/api/resource"
 
@@ -8,20 +10,12 @@ import (
 )
 
 const (
-	pinotImageHub          = "docker.io/davideberdin"
-	pinotImageVersion      = ""
-	defaultImageHub        = "gcr.io/apache"
-	defaultImageVersion    = ""
-	defaultImagePullPolicy = "IfNotPresent"
-	defaultNetworkName     = "cluster.local"
+	pinotImageHub     = "apachepinot/pinot"
+	pinotImageVersion = "latest"
 	// replicas
 	defaultReplicaCount = 1
 	defaultMinReplicas  = 1
 	defaultMaxReplicas  = 5
-	// images
-	defaultControllerImage = defaultImageHub + "/" + "controller" + ":" + defaultImageVersion
-	defaultBrokerImage     = defaultImageHub + "/" + "broker" + ":" + defaultImageVersion
-	defaultServerImage     = defaultImageHub + "/" + "server" + ":" + defaultImageVersion
 	// resources
 )
 
@@ -42,12 +36,19 @@ var defaultResources = &apiv1.ResourceRequirements{
 
 // SetDefaults sets the defaults values for all the components
 func SetDefaults(config *Pinot) {
-	// controller
+	// common
 	if config.Spec.Image == nil {
-		config.Spec.Image = util.StrPointer(defaultControllerImage)
+		config.Spec.Image = util.StrPointer(fmt.Sprintf("%s:%s", pinotImageHub, pinotImageVersion))
 	}
+	// controller
 	if config.Spec.Controller.Resources == nil {
 		config.Spec.Controller.Resources = defaultResources
+	}
+	if config.Spec.Controller.DiskSize == "" {
+		config.Spec.Controller.DiskSize = "1G"
+	}
+	if config.Spec.Controller.JvmOptions == "" {
+		config.Spec.Controller.JvmOptions = "-Xms256M -Xmx1G -XX:+UseG1GC -XX:MaxGCPauseMillis=200"
 	}
 	// broker
 	if config.Spec.Broker.Resources == nil {

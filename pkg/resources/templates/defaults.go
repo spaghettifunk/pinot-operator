@@ -71,9 +71,10 @@ func DefaultServicePort(name string, port, targetPort int) apiv1.ServicePort {
 }
 
 // DefaultContainerPort returns the default values for the containerPort
-func DefaultContainerPort(name string, containerPort int) apiv1.ContainerPort {
+func DefaultContainerPort(name string, containerPort int, protocol apiv1.Protocol) apiv1.ContainerPort {
 	return apiv1.ContainerPort{
 		Name:          name,
+		Protocol:      protocol,
 		ContainerPort: int32(containerPort),
 	}
 }

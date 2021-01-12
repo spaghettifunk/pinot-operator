@@ -20,12 +20,13 @@ var controllerConfig = `
 	controller.vip.port={{controllerVIPPort}}
 	{{#controllerVIPort}}
 	controller.data.dir={{controllerDataDir}}
-	controller.zk.str={{zookeeperURL}}	
+	controller.zk.str={{zookeeperURL}}
+	pinot.set.instance.id.to.hostname=true
 `
 
 func (r *Reconciler) configmap() runtime.Object {
 
-	zookeeperURL := fmt.Sprintf("http://%s:%s", serviceName, strconv.Itoa(r.Config.Spec.Zookeeper.Service.Port))
+	zookeeperURL := fmt.Sprintf("%s:%s", serviceName, strconv.Itoa(r.Config.Spec.Zookeeper.Service.Port))
 
 	return &apiv1.ConfigMap{
 		ObjectMeta: templates.ObjectMetaWithAnnotations(configmapName, r.labels(), templates.DefaultAnnotations(string(r.Config.Spec.Version)), r.Config),
@@ -35,7 +36,7 @@ func (r *Reconciler) configmap() runtime.Object {
 				"controllerPort":    strconv.Itoa(r.Config.Spec.Controller.Service.Port),
 				"controllerVIPHost": r.Config.Spec.Controller.VIPHost,
 				"controllerVIPPort": r.Config.Spec.Controller.VIPPort,
-				"controllerDataDir": "", // TODO: fix me
+				"controllerDataDir": "/var/pinot/controller/data",
 				"zookeeperURL":      zookeeperURL,
 			}),
 		},

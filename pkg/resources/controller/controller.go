@@ -11,10 +11,14 @@ import (
 )
 
 const (
-	componentName   = "controller"
-	statefulsetName = "pinot-controller"
-	configmapName   = "pinot-controller"
-	serviceName     = "pinot-controller-api"
+	componentName              = "controller"
+	statefulsetName            = "pinot-controller"
+	configmapName              = "pinot-controller-config"
+	serviceName                = "pinot-controller"
+	serviceHeadlessName        = "pinot-controller-headless"
+	serviceExternalName        = "pinot-controller-external"
+	controllerDataVolumeName   = "pinot-controller-data"
+	controllerConfigVolumeName = "pinot-controller-config"
 )
 
 // Reconciler .
@@ -45,6 +49,7 @@ func (r *Reconciler) Reconcile(log logr.Logger) error {
 		{Resource: r.statefulsets, DesiredState: desiredState},
 		{Resource: r.service, DesiredState: desiredState},
 		{Resource: r.serviceHeadless, DesiredState: desiredState},
+		{Resource: r.serviceExternal, DesiredState: desiredState},
 	} {
 		o := res.Resource()
 		err := k8sutil.Reconcile(log, r.Client, o, res.DesiredState)
@@ -60,16 +65,18 @@ func (r *Reconciler) Reconcile(log logr.Logger) error {
 
 func (r *Reconciler) labels() map[string]string {
 	return map[string]string{
-		"pinot.operator/app":             r.Config.ClusterName,
-		"pinot.operator/component":       componentName,
-		"pinot.operator/release-version": pinotv1alpha1.OperatorVersion,
+		"app":             r.Config.ClusterName,
+		"component":       componentName,
+		"release":         "pinot",
+		"release-version": pinotv1alpha1.OperatorVersion,
 	}
 }
 
-// deploymentLabels returns the labels used for the deployment of the web component
-func (r *Reconciler) deploymentLabels() map[string]string {
+func (r *Reconciler) selector(name string) map[string]string {
 	return map[string]string{
-		"app.kubernetes.io/name": componentName,
+		"app":       "pinot",
+		"release":   "pinot",
+		"component": name,
 	}
 }
 

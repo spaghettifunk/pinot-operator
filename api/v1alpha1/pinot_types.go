@@ -75,6 +75,7 @@ type CommonResourceConfiguration struct {
 	PodLabels       map[string]string       `json:"podLabels,omitempty"`
 	SecurityContext *corev1.SecurityContext `json:"securityContext,omitempty"`
 	ReplicaCount    *int32                  `json:"replicaCount,omitempty"`
+	Env             []corev1.EnvVar         `json:"env,omitempty"`
 	// Optional: If set to true then operator checks the rollout status of previous version StateSets before updating next.
 	// Used only for updates.
 	RollingDeploy bool `json:"rollingDeploy,omitempty"`
@@ -102,8 +103,9 @@ type ServiceResourceConfiguration struct {
 
 // ExternalServiceResourceConfiguration defines some definition for a service resource
 type ExternalServiceResourceConfiguration struct {
-	Type string `json:"type,omitempty"`
-	Port int    `json:"port,omitempty"`
+	Annotations map[string]string `json:"annotations,omitempty"`
+	Type        string            `json:"type,omitempty"`
+	Port        int               `json:"port,omitempty"`
 }
 
 // PinotVersion stores the intended Pinot version
@@ -132,6 +134,7 @@ type PinotSpec struct {
 // ControllerConfiguration defines the k8s spec configuration for the Pinot controller
 type ControllerConfiguration struct {
 	CommonResourceConfiguration `json:",inline"`
+	DiskSize                    string `json:"diskSize,omitempty"`
 	// Optional: jvm options for pinot jvm processes
 	JvmOptions      string                               `json:"jvm.options,omitempty"`
 	VIPHost         string                               `json:"vip.host,omitempty"`
