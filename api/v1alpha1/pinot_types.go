@@ -135,40 +135,43 @@ type PinotSpec struct {
 // ControllerConfiguration defines the k8s spec configuration for the Pinot controller
 type ControllerConfiguration struct {
 	CommonResourceConfiguration `json:",inline"`
-	DiskSize                    string `json:"diskSize,omitempty"`
-	// Optional: jvm options for pinot jvm processes
-	JvmOptions      string                               `json:"jvm.options,omitempty"`
-	VIPHost         string                               `json:"vip.host,omitempty"`
-	VIPPort         string                               `json:"vip.port,omitempty"`
-	Service         ServiceResourceConfiguration         `json:"service,omitempty"`
-	ExternalService ExternalServiceResourceConfiguration `json:"externalService,omitempty"`
+	DiskSize                    string                               `json:"diskSize,omitempty"`
+	JvmOptions                  string                               `json:"jvmOptions,omitempty"`
+	VIPHost                     string                               `json:"vip.host,omitempty"`
+	VIPPort                     string                               `json:"vip.port,omitempty"`
+	Service                     ServiceResourceConfiguration         `json:"service,omitempty"`
+	ExternalService             ExternalServiceResourceConfiguration `json:"externalService,omitempty"`
 }
 
 // BrokerConfiguration defines the k8s spec configuration for the Pinot broker
 type BrokerConfiguration struct {
 	CommonResourceConfiguration `json:",inline"`
-	// Optional: jvm options for pinot jvm processes
-	JvmOptions      string                               `json:"jvm.options,omitempty"`
-	Service         ServiceResourceConfiguration         `json:"service,omitempty"`
-	ExternalService ExternalServiceResourceConfiguration `json:"externalService,omitempty"`
+	JvmOptions                  string                               `json:"jvmOptions,omitempty"`
+	Service                     ServiceResourceConfiguration         `json:"service,omitempty"`
+	ExternalService             ExternalServiceResourceConfiguration `json:"externalService,omitempty"`
 }
 
 // ServerConfiguration defines the k8s spec configuration for the Pinot server
 type ServerConfiguration struct {
 	CommonResourceConfiguration `json:",inline"`
-	DiskSize                    string `json:"diskSize,omitempty"`
-	// Optional: jvm options for pinot jvm processes
-	JvmOptions string                       `json:"jvm.options,omitempty"`
-	Service    ServiceResourceConfiguration `json:"service,omitempty"`
-	AdminPort  int                          `json:"adminPort,omitport"`
+	DiskSize                    string                       `json:"diskSize,omitempty"`
+	JvmOptions                  string                       `json:"jvmOptions,omitempty"`
+	Service                     ServiceResourceConfiguration `json:"service,omitempty"`
+	AdminPort                   int                          `json:"adminPort,omitport"`
 }
 
 // ZookeeperConfiguration defines the desired state of Zookeeper
 type ZookeeperConfiguration struct {
-	CommonResourceConfiguration `json:",inline"`
-	// Optional: jvm options for pinot jvm processes
-	JvmOptions string                       `json:"jvm.options,omitempty"`
-	Service    ServiceResourceConfiguration `json:"service,omitempty"`
+	Image      *string
+	Replicas   int                          `json:"replicas,omitempty"`
+	Resources  *corev1.ResourceRequirements `json:"resources,omitempty"`
+	Storage    *zookeeperStorage            `json:"storage,omitempty"`
+	JvmOptions string                       `json:"jvmOptions,omitempty"`
+}
+
+// zookeeperStorage defines the inner parameters for setting up the storage
+type zookeeperStorage struct {
+	Size string `json:"size,omitempty"`
 }
 
 // DeepStorageConfiguration defines the desired state of the DeepStorege

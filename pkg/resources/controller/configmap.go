@@ -26,7 +26,7 @@ var controllerConfig = `
 
 func (r *Reconciler) configmap() runtime.Object {
 	// TODO: fix name of zookeeper server
-	zookeeperURL := fmt.Sprintf("%s:%s", "pinot-zookeeper", strconv.Itoa(r.Config.Spec.Zookeeper.Service.Port))
+	zookeeperURL := fmt.Sprintf("%s:%s", "pinot-zookeeper", "2181")
 
 	return &apiv1.ConfigMap{
 		ObjectMeta: templates.ObjectMetaWithAnnotations(configmapName, r.labels(), templates.DefaultAnnotations(string(r.Config.Spec.Version)), r.Config),

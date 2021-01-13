@@ -12,6 +12,9 @@ import (
 const (
 	pinotImageHub     = "apachepinot/pinot"
 	pinotImageVersion = "latest"
+	// zookeeper image
+	zookeeperImageHub     = "zookeeper"
+	zookeeperImageVersion = "3.5.5"
 	// replicas
 	defaultReplicaCount = 1
 	defaultMinReplicas  = 1
@@ -27,6 +30,17 @@ var defaultResources = &apiv1.ResourceRequirements{
 	Requests: apiv1.ResourceList{
 		apiv1.ResourceCPU:    resource.MustParse("100m"),
 		apiv1.ResourceMemory: resource.MustParse("50Mi"),
+	},
+}
+
+var zookeeperDefaultResources = &apiv1.ResourceRequirements{
+	Limits: apiv1.ResourceList{
+		apiv1.ResourceCPU:    resource.MustParse("512m"),
+		apiv1.ResourceMemory: resource.MustParse("2Gi"),
+	},
+	Requests: apiv1.ResourceList{
+		apiv1.ResourceCPU:    resource.MustParse("256m"),
+		apiv1.ResourceMemory: resource.MustParse("1Gi"),
 	},
 }
 
@@ -64,14 +78,19 @@ func SetDefaults(config *Pinot) {
 	if config.Spec.Server.DiskSize == "" {
 		config.Spec.Server.DiskSize = "4G"
 	}
-
-	// TODO: Zookeeper
-	// if config.Spec.Zookeeper.Image == nil {
-	// 	config.Spec.Zookeeper.Image = util.StrPointer(defaultControllerImage)
-	// }
-	// if config.Spec.Zookeeper.Resources == nil {
-	// 	config.Spec.Zookeeper.Resources = defaultResources
-	// }
+	// zookeeper
+	if config.Spec.Zookeeper.Image == nil {
+		config.Spec.Zookeeper.Image = util.StrPointer(fmt.Sprintf("%s:%s", zookeeperImageHub, zookeeperImageVersion))
+	}
+	if config.Spec.Zookeeper.Resources == nil {
+		config.Spec.Zookeeper.Resources = zookeeperDefaultResources
+	}
+	if config.Spec.Zookeeper.JvmOptions == "" {
+		config.Spec.Zookeeper.JvmOptions = "-Xmx2G -Xms2G"
+	}
+	if config.Spec.Zookeeper.Storage.Size == "" {
+		config.Spec.Zookeeper.Storage.Size = "5Gi"
+	}
 
 	// TODO: DeepStorage
 	// if config.Spec.DeepStorage.Image == nil {

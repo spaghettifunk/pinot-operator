@@ -2,7 +2,6 @@ package server
 
 import (
 	"fmt"
-	"strconv"
 
 	"github.com/spaghettifunk/pinot-operator/pkg/resources/templates"
 	"k8s.io/apimachinery/pkg/api/resource"
@@ -55,7 +54,7 @@ func (r *Reconciler) statefulsets() runtime.Object {
 
 func (r *Reconciler) containers() []apiv1.Container {
 	// TODO: fix name of zookeeper server
-	zookeeperURL := fmt.Sprintf("%s:%s", "pinot-zookeeper", strconv.Itoa(r.Config.Spec.Zookeeper.Service.Port))
+	zookeeperURL := fmt.Sprintf("%s:%s", "pinot-zookeeper", "2181")
 	containers := []apiv1.Container{
 		{
 			Name:            componentName,
