@@ -1,0 +1,18 @@
+site_name: Pinot Operator
+repo_url: https://github.com/spaghettifunk/pinot-operator
+strict: true
+theme:
+  name: material
+  palette:
+    primary: teal
+  font:
+    text: 'Work Sans'
+  logo: 'assets/logo.png'
+markdown_extensions:
+  - codehilite
+  - admonition
+  - toc:
+      permalink: true
+nav:
+  - Releases ⧉: https://github.com/spaghettifunk/pinot-operator/releases
+  - Roadmap ⧉: https://github.com/spaghettifunk/pinot-operator/milestones  

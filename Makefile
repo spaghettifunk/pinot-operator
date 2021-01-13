@@ -81,7 +81,10 @@ endif
 
 .PHONY: documentation
 documentation:
-	go mod vendor
-	./hack/update-api-docs.sh
-	rm -rf ./vendor
-	go mod tidy
+	go get -u github.com/elastic/crd-ref-docs
+	crd-ref-docs \
+		--source-path=./api \
+		--config=./hack/doc_config.yaml \
+		--renderer=asciidoctor \
+		--templates-dir=./docs/templates \
+		--output-path=./docs/output/pinot-operator.asciidoc
