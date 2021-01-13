@@ -162,7 +162,7 @@ type ServerConfiguration struct {
 
 // ZookeeperConfiguration defines the desired state of Zookeeper
 type ZookeeperConfiguration struct {
-	Image      *string
+	Image      *string                      `json:"-"`
 	Replicas   int                          `json:"replicas,omitempty"`
 	Resources  *corev1.ResourceRequirements `json:"resources,omitempty"`
 	Storage    *zookeeperStorage            `json:"storage,omitempty"`
@@ -185,9 +185,11 @@ type PinotStatus struct {
 	ErrorMessage string      `json:"ErrorMessage,omitempty"`
 }
 
-// +kubebuilder:object:root=true
-
 // Pinot is the Schema for the pinots API
+// +genclient
+// +kubebuilder:resource:shortName=pn
+// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
+// +k8s:openapi-gen=true
 type Pinot struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
@@ -196,9 +198,8 @@ type Pinot struct {
 	Status PinotStatus `json:"status,omitempty"`
 }
 
-// +kubebuilder:object:root=true
-
 // PinotList contains a list of Pinot
+// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 type PinotList struct {
 	metav1.TypeMeta `json:",inline"`
 	metav1.ListMeta `json:"metadata,omitempty"`

@@ -78,3 +78,10 @@ CONTROLLER_GEN=$(GOBIN)/controller-gen
 else
 CONTROLLER_GEN=$(shell which controller-gen)
 endif
+
+.PHONY: documentation
+documentation:
+	go mod vendor
+	./hack/update-api-docs.sh
+	rm -rf ./vendor
+	go mod tidy
