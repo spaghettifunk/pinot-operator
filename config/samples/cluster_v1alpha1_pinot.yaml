@@ -1,7 +1,7 @@
-apiVersion: cluster.spaghettifunk.io/v1alpha1
+apiVersion: apache.io/v1alpha1
 kind: Pinot
 metadata:
   name: pinot-sample
-spec:
-  # Add fields here
-  foo: bar
+  namespace: pinot
+spec:  
+  clusterName: pinot-cluster

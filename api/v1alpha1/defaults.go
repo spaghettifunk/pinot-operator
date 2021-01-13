@@ -24,12 +24,12 @@ const (
 
 var defaultResources = &apiv1.ResourceRequirements{
 	Limits: apiv1.ResourceList{
-		apiv1.ResourceCPU:    resource.MustParse("100m"),
-		apiv1.ResourceMemory: resource.MustParse("50Mi"),
+		apiv1.ResourceCPU:    resource.MustParse("512m"),
+		apiv1.ResourceMemory: resource.MustParse("2Gi"),
 	},
 	Requests: apiv1.ResourceList{
-		apiv1.ResourceCPU:    resource.MustParse("100m"),
-		apiv1.ResourceMemory: resource.MustParse("50Mi"),
+		apiv1.ResourceCPU:    resource.MustParse("256m"),
+		apiv1.ResourceMemory: resource.MustParse("1Gi"),
 	},
 }
 
@@ -55,6 +55,9 @@ func SetDefaults(config *Pinot) {
 		config.Spec.Image = util.StrPointer(fmt.Sprintf("%s:%s", pinotImageHub, pinotImageVersion))
 	}
 	// controller
+	if config.Spec.Controller == nil {
+		config.Spec.Controller = &ControllerConfiguration{}
+	}
 	if config.Spec.Controller.Resources == nil {
 		config.Spec.Controller.Resources = defaultResources
 	}
@@ -65,6 +68,9 @@ func SetDefaults(config *Pinot) {
 		config.Spec.Controller.JvmOptions = "-Xms256M -Xmx1G -XX:+UseG1GC -XX:MaxGCPauseMillis=200"
 	}
 	// broker
+	if config.Spec.Broker == nil {
+		config.Spec.Broker = &BrokerConfiguration{}
+	}
 	if config.Spec.Broker.Resources == nil {
 		config.Spec.Broker.Resources = defaultResources
 	}
@@ -72,6 +78,9 @@ func SetDefaults(config *Pinot) {
 		config.Spec.Broker.JvmOptions = "-Xms256M -Xmx1G -XX:+UseG1GC -XX:MaxGCPauseMillis=200"
 	}
 	// server
+	if config.Spec.Server == nil {
+		config.Spec.Server = &ServerConfiguration{}
+	}
 	if config.Spec.Server.Resources == nil {
 		config.Spec.Server.Resources = defaultResources
 	}
@@ -79,8 +88,16 @@ func SetDefaults(config *Pinot) {
 		config.Spec.Server.DiskSize = "4G"
 	}
 	// zookeeper
+	if config.Spec.Zookeeper == nil {
+		config.Spec.Zookeeper = &ZookeeperConfiguration{
+			Storage: &zookeeperStorage{},
+		}
+	}
 	if config.Spec.Zookeeper.Image == nil {
 		config.Spec.Zookeeper.Image = util.StrPointer(fmt.Sprintf("%s:%s", zookeeperImageHub, zookeeperImageVersion))
+	}
+	if config.Spec.Zookeeper.Replicas == 0 {
+		config.Spec.Zookeeper.Replicas = 1
 	}
 	if config.Spec.Zookeeper.Resources == nil {
 		config.Spec.Zookeeper.Resources = zookeeperDefaultResources

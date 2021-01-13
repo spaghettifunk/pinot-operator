@@ -1,7 +1,7 @@
 package zookeeper
 
 import (
-	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"github.com/spaghettifunk/pinot-operator/pkg/resources/templates"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/util/intstr"
 
@@ -10,10 +10,7 @@ import (
 
 func (r *Reconciler) serviceHeadless() runtime.Object {
 	return &apiv1.Service{
-		ObjectMeta: v1.ObjectMeta{
-			Name:   serviceHeadlessName,
-			Labels: r.labels(),
-		},
+		ObjectMeta: templates.ObjectMetaWithAnnotations(serviceHeadlessName, r.labels(), templates.DefaultAnnotations(string(r.Config.Spec.Version)), r.Config),
 		Spec: apiv1.ServiceSpec{
 			Type:      apiv1.ServiceTypeClusterIP,
 			ClusterIP: "None",

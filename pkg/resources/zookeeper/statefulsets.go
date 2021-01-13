@@ -21,10 +21,7 @@ const (
 
 func (r *Reconciler) statefulsets() runtime.Object {
 	return &appsv1.StatefulSet{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:   statefulsetName,
-			Labels: r.labels(),
-		},
+		ObjectMeta: templates.ObjectMetaWithAnnotations(statefulsetName, r.labels(), templates.DefaultAnnotations(string(r.Config.Spec.Version)), r.Config),
 		Spec: appsv1.StatefulSetSpec{
 			Replicas:            util.IntPointer(int32(r.Config.Spec.Zookeeper.Replicas)),
 			ServiceName:         serviceHeadlessName,
@@ -59,7 +56,7 @@ func (r *Reconciler) containers() []apiv1.Container {
 	containers := []apiv1.Container{
 		{
 			Name:            componentName,
-			Image:           *r.Config.Spec.Image,
+			Image:           *r.Config.Spec.Zookeeper.Image,
 			ImagePullPolicy: r.Config.Spec.ImagePullPolicy,
 			Command: []string{
 				"/bin/bash",

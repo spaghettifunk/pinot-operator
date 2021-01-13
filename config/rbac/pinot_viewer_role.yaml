@@ -5,7 +5,7 @@ metadata:
   name: pinot-viewer-role
 rules:
 - apiGroups:
-  - cluster.spaghettifunk.io
+  - apache.io
   resources:
   - pinots
   verbs:
@@ -13,7 +13,7 @@ rules:
   - list
   - watch
 - apiGroups:
-  - cluster.spaghettifunk.io
+  - apache.io
   resources:
   - pinots/status
   verbs:

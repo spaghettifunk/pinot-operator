@@ -115,67 +115,100 @@ type PinotVersion string
 // PinotSpec defines the desired state of Pinot
 type PinotSpec struct {
 	// Required: cluster name for the pinot deployment
-	ClusterName string       `json:"clusterName"`
-	Version     PinotVersion `json:"version"`
-	Image       *string      `json:"image,omitempty"`
+	ClusterName string `json:"clusterName"`
+	// +optional
+	Version PinotVersion `json:"version"`
+	// +optional
+	Image *string `json:"image,omitempty"`
 	// Optional: imagePullSecrets for private registries
+	// +optional
 	ImagePullSecrets []v1.LocalObjectReference `json:"imagePullSecrets,omitempty"`
 	// Optional: image pull policy for the docker image
+	// +optional
 	ImagePullPolicy v1.PullPolicy `json:"imagePullPolicy,omitempty"`
 	// Optional: log4j config file directory
+	// +optional
 	Log4jConfigPath string `json:"log4j.path,omitempty"`
 	// Components for the Pinot cluster
-	Controller  *ControllerConfiguration  `json:"controller"`
-	Broker      *BrokerConfiguration      `json:"broker"`
-	Server      *ServerConfiguration      `json:"server"`
-	Zookeeper   *ZookeeperConfiguration   `json:"zookeeper"`
+	// +optional
+	Controller *ControllerConfiguration `json:"controller"`
+	// +optional
+	Broker *BrokerConfiguration `json:"broker"`
+	// +optional
+	Server *ServerConfiguration `json:"server"`
+	// +optional
+	Zookeeper *ZookeeperConfiguration `json:"zookeeper"`
+	// +optional
 	DeepStorage *DeepStorageConfiguration `json:"deepStorage,omitempty"`
 }
 
 // ControllerConfiguration defines the k8s spec configuration for the Pinot controller
 type ControllerConfiguration struct {
+	// +optional
 	CommonResourceConfiguration `json:",inline"`
-	DiskSize                    string                               `json:"diskSize,omitempty"`
-	JvmOptions                  string                               `json:"jvmOptions,omitempty"`
-	VIPHost                     string                               `json:"vip.host,omitempty"`
-	VIPPort                     string                               `json:"vip.port,omitempty"`
-	Service                     ServiceResourceConfiguration         `json:"service,omitempty"`
-	ExternalService             ExternalServiceResourceConfiguration `json:"externalService,omitempty"`
+	// +optional
+	DiskSize string `json:"diskSize,omitempty"`
+	// +optional
+	JvmOptions string `json:"jvmOptions,omitempty"`
+	// +optional
+	VIPHost string `json:"vip.host,omitempty"`
+	// +optional
+	VIPPort string `json:"vip.port,omitempty"`
+	// +optional
+	Service ServiceResourceConfiguration `json:"service,omitempty"`
+	// +optional
+	ExternalService ExternalServiceResourceConfiguration `json:"externalService,omitempty"`
 }
 
 // BrokerConfiguration defines the k8s spec configuration for the Pinot broker
 type BrokerConfiguration struct {
+	// +optional
 	CommonResourceConfiguration `json:",inline"`
-	JvmOptions                  string                               `json:"jvmOptions,omitempty"`
-	Service                     ServiceResourceConfiguration         `json:"service,omitempty"`
-	ExternalService             ExternalServiceResourceConfiguration `json:"externalService,omitempty"`
+	// +optional
+	JvmOptions string `json:"jvmOptions,omitempty"`
+	// +optional
+	Service ServiceResourceConfiguration `json:"service,omitempty"`
+	// +optional
+	ExternalService ExternalServiceResourceConfiguration `json:"externalService,omitempty"`
 }
 
 // ServerConfiguration defines the k8s spec configuration for the Pinot server
 type ServerConfiguration struct {
+	// +optional
 	CommonResourceConfiguration `json:",inline"`
-	DiskSize                    string                       `json:"diskSize,omitempty"`
-	JvmOptions                  string                       `json:"jvmOptions,omitempty"`
-	Service                     ServiceResourceConfiguration `json:"service,omitempty"`
-	AdminPort                   int                          `json:"adminPort,omitport"`
+	// +optional
+	DiskSize string `json:"diskSize,omitempty"`
+	// +optional
+	JvmOptions string `json:"jvmOptions,omitempty"`
+	// +optional
+	Service ServiceResourceConfiguration `json:"service,omitempty"`
+	// +optional
+	AdminPort int `json:"adminPort,omitport"`
 }
 
 // ZookeeperConfiguration defines the desired state of Zookeeper
 type ZookeeperConfiguration struct {
-	Image      *string                      `json:"-"`
-	Replicas   int                          `json:"replicas,omitempty"`
-	Resources  *corev1.ResourceRequirements `json:"resources,omitempty"`
-	Storage    *zookeeperStorage            `json:"storage,omitempty"`
-	JvmOptions string                       `json:"jvmOptions,omitempty"`
+	// +optional
+	Image *string `json:"-"`
+	// +optional
+	Replicas int `json:"replicas,omitempty"`
+	// +optional
+	Resources *corev1.ResourceRequirements `json:"resources,omitempty"`
+	// +optional
+	Storage *zookeeperStorage `json:"storage,omitempty"`
+	// +optional
+	JvmOptions string `json:"jvmOptions,omitempty"`
 }
 
 // zookeeperStorage defines the inner parameters for setting up the storage
 type zookeeperStorage struct {
+	// +optional
 	Size string `json:"size,omitempty"`
 }
 
 // DeepStorageConfiguration defines the desired state of the DeepStorege
 type DeepStorageConfiguration struct {
+	// +optional
 	Spec json.RawMessage `json:"spec"`
 }
 

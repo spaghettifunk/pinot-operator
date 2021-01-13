@@ -5,11 +5,11 @@
 == API Reference
 
 .Packages
-- xref:{anchor_prefix}-cluster-spaghettifunk-io-v1alpha1[$$cluster.spaghettifunk.io/v1alpha1$$]
+- xref:{anchor_prefix}-cluster-spaghettifunk-io-v1alpha1[$$apache.io/v1alpha1$$]
 
 
 [id="{anchor_prefix}-cluster-spaghettifunk-io-v1alpha1"]
-=== cluster.spaghettifunk.io/v1alpha1
+=== apache.io/v1alpha1
 
 Package v1alpha1 contains API Schema definitions for the cluster v1alpha1 API group
 

@@ -22,9 +22,10 @@ import (
 	"github.com/go-logr/logr"
 	"github.com/goph/emperror"
 	"github.com/pkg/errors"
-	pinotbroker "github.com/spaghettifunk/pinot-operator/pkg/resources/broker"
-	pinotcontroller "github.com/spaghettifunk/pinot-operator/pkg/resources/controller"
-	pinotserver "github.com/spaghettifunk/pinot-operator/pkg/resources/server"
+
+	// pinotbroker "github.com/spaghettifunk/pinot-operator/pkg/resources/broker"
+	// pinotcontroller "github.com/spaghettifunk/pinot-operator/pkg/resources/controller"
+	// pinotserver "github.com/spaghettifunk/pinot-operator/pkg/resources/server"
 	pinotzookeeper "github.com/spaghettifunk/pinot-operator/pkg/resources/zookeeper"
 	corev1 "k8s.io/api/core/v1"
 	k8errors "k8s.io/apimachinery/pkg/api/errors"
@@ -98,8 +99,8 @@ type PinotReconciler struct {
 	Scheme *runtime.Scheme
 }
 
-// +kubebuilder:rbac:groups=cluster.spaghettifunk.io,resources=pinots,verbs=get;list;watch;create;update;patch;delete
-// +kubebuilder:rbac:groups=cluster.spaghettifunk.io,resources=pinots/status,verbs=get;update;patch
+// +kubebuilder:rbac:groups=apache.io,resources=pinots,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups=apache.io,resources=pinots/status,verbs=get;update;patch
 
 func (r *PinotReconciler) Reconcile(request reconcile.Request) (reconcile.Result, error) {
 	logger := log.WithValues("Request.Namespace", request.Namespace, "Request.Name", request.Name)
@@ -149,9 +150,9 @@ func (r *PinotReconciler) reconcile(logger logr.Logger, config *pinotv1alpha1.Pi
 	// for each component do a reconciliation
 	reconcilers := []resources.ComponentReconciler{
 		pinotzookeeper.New(r.Client, config),
-		pinotcontroller.New(r.Client, config),
-		pinotbroker.New(r.Client, config),
-		pinotserver.New(r.Client, config),
+		// pinotcontroller.New(r.Client, config),
+		// pinotbroker.New(r.Client, config),
+		// pinotserver.New(r.Client, config),
 	}
 	for _, rec := range reconcilers {
 		err := rec.Reconcile(logger)
