@@ -20,7 +20,7 @@ var controllerConfig = `
 
 func (r *Reconciler) configmap() runtime.Object {
 	return &apiv1.ConfigMap{
-		ObjectMeta: templates.ObjectMetaWithAnnotations(configmapName, r.labels(), templates.DefaultAnnotations(string(r.Config.Spec.Version)), r.Config),
+		ObjectMeta: templates.ObjectMeta(configmapName, r.labels(), r.Config),
 		Data: map[string]string{
 			"pinot-server.conf": mustache.Render(controllerConfig, map[string]string{
 				"servicePort": strconv.Itoa(r.Config.Spec.Server.Service.Port),

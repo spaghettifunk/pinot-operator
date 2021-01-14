@@ -23,9 +23,9 @@ import (
 	"github.com/goph/emperror"
 	"github.com/pkg/errors"
 
-	// pinotbroker "github.com/spaghettifunk/pinot-operator/pkg/resources/broker"
-	// pinotcontroller "github.com/spaghettifunk/pinot-operator/pkg/resources/controller"
-	// pinotserver "github.com/spaghettifunk/pinot-operator/pkg/resources/server"
+	pinotbroker "github.com/spaghettifunk/pinot-operator/pkg/resources/broker"
+	pinotcontroller "github.com/spaghettifunk/pinot-operator/pkg/resources/controller"
+	pinotserver "github.com/spaghettifunk/pinot-operator/pkg/resources/server"
 	pinotzookeeper "github.com/spaghettifunk/pinot-operator/pkg/resources/zookeeper"
 	corev1 "k8s.io/api/core/v1"
 	k8errors "k8s.io/apimachinery/pkg/api/errors"
@@ -150,9 +150,9 @@ func (r *PinotReconciler) reconcile(logger logr.Logger, config *pinotv1alpha1.Pi
 	// for each component do a reconciliation
 	reconcilers := []resources.ComponentReconciler{
 		pinotzookeeper.New(r.Client, config),
-		// pinotcontroller.New(r.Client, config),
-		// pinotbroker.New(r.Client, config),
-		// pinotserver.New(r.Client, config),
+		pinotserver.New(r.Client, config),
+		pinotcontroller.New(r.Client, config),
+		pinotbroker.New(r.Client, config),
 	}
 	for _, rec := range reconcilers {
 		err := rec.Reconcile(logger)

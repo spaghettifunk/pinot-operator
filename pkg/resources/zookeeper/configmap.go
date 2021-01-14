@@ -46,7 +46,7 @@ ID_FILE="$ZK_DATA_DIR/{{zookeeperId}}"
 ZK_CONFIG_FILE={{configFilePath}}
 LOG4J_PROPERTIES={{log4jPropertiesPath}}
 HOST=$(hostname)
-DOMAIN="cluster.local"
+DOMAIN=$(hostname -d)
 JVMFLAGS="{{jvmOptions}}"
 
 APPJAR=$(echo $ROOT/*jar)
@@ -129,7 +129,7 @@ const (
 
 func (r *Reconciler) configmap() runtime.Object {
 	return &apiv1.ConfigMap{
-		ObjectMeta: templates.ObjectMetaWithAnnotations(configmapName, r.labels(), templates.DefaultAnnotations(string(r.Config.Spec.Version)), r.Config),
+		ObjectMeta: templates.ObjectMeta(configmapName, r.labels(), r.Config),
 		Data: map[string]string{
 			"ok": mustache.Render(okConfig, map[string]string{}),
 			"ready": mustache.Render(readyConfig, map[string]string{

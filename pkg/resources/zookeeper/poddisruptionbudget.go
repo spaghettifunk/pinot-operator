@@ -10,10 +10,10 @@ import (
 
 func (r *Reconciler) podDisruptionBuget() runtime.Object {
 	return &v1beta1.PodDisruptionBudget{
-		ObjectMeta: templates.ObjectMetaWithAnnotations(podDisruptionBudgetName, r.labels(), templates.DefaultAnnotations(string(r.Config.Spec.Version)), r.Config),
+		ObjectMeta: templates.ObjectMeta(podDisruptionBudgetName, r.labels(), r.Config),
 		Spec: v1beta1.PodDisruptionBudgetSpec{
 			Selector: &v1.LabelSelector{
-				MatchLabels: r.selector(componentName),
+				MatchLabels: r.labels(),
 			},
 			MaxUnavailable: util.IntstrPointer(podDisruptionBudgetMaxUnavailable),
 		},

@@ -2090,7 +2090,7 @@ spec:
                 vip.host:
                   type: string
                 vip.port:
-                  type: string
+                  type: integer
                 volumeClaimTemplates:
                   items:
                     properties:

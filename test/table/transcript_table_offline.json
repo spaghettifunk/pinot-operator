@@ -1,0 +1,19 @@
+{
+    "tableName": "transcript",
+    "segmentsConfig": {
+        "timeColumnName": "timestampInEpoch",
+        "timeType": "MILLISECONDS",
+        "replication": "1",
+        "schemaName": "transcript"
+    },
+    "tableIndexConfig": {
+        "invertedIndexColumns": [],
+        "loadMode": "MMAP"
+    },
+    "tenants": {
+        "broker": "DefaultTenant",
+        "server": "DefaultTenant"
+    },
+    "tableType": "OFFLINE",
+    "metadata": {}
+}

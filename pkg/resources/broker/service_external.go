@@ -9,10 +9,10 @@ import (
 
 func (r *Reconciler) serviceExternal() runtime.Object {
 	return &apiv1.Service{
-		ObjectMeta: templates.ObjectMetaWithAnnotations(serviceExternalName, r.labels(), r.Config.Spec.Controller.ExternalService.Annotations, r.Config),
+		ObjectMeta: templates.ObjectMeta(serviceExternalName, r.labels(), r.Config),
 		Spec: apiv1.ServiceSpec{
 			Type:     apiv1.ServiceTypeLoadBalancer,
-			Selector: r.selector(componentName),
+			Selector: r.labels(),
 			Ports: []apiv1.ServicePort{
 				templates.DefaultServicePort(
 					"external-broker",

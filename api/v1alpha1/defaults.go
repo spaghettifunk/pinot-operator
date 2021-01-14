@@ -61,6 +61,9 @@ func SetDefaults(config *Pinot) {
 	if config.Spec.Controller.Resources == nil {
 		config.Spec.Controller.Resources = defaultResources
 	}
+	if config.Spec.Controller.Service.Port == 0 {
+		config.Spec.Controller.Service.Port = 9000
+	}
 	if config.Spec.Controller.DiskSize == "" {
 		config.Spec.Controller.DiskSize = "1G"
 	}
@@ -77,9 +80,21 @@ func SetDefaults(config *Pinot) {
 	if config.Spec.Broker.JvmOptions == "" {
 		config.Spec.Broker.JvmOptions = "-Xms256M -Xmx1G -XX:+UseG1GC -XX:MaxGCPauseMillis=200"
 	}
+	if config.Spec.Broker.Service.Port == 0 {
+		config.Spec.Broker.Service.Port = 8099
+	}
+	if config.Spec.Broker.ExternalService.Port == 0 {
+		config.Spec.Broker.ExternalService.Port = 8099
+	}
 	// server
 	if config.Spec.Server == nil {
 		config.Spec.Server = &ServerConfiguration{}
+	}
+	if config.Spec.Server.Service.Port == 0 {
+		config.Spec.Server.Service.Port = 8098
+	}
+	if config.Spec.Server.AdminPort == 0 {
+		config.Spec.Server.AdminPort = 8097
 	}
 	if config.Spec.Server.Resources == nil {
 		config.Spec.Server.Resources = defaultResources

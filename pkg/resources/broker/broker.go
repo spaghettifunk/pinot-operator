@@ -45,10 +45,10 @@ func (r *Reconciler) Reconcile(log logr.Logger) error {
 
 	for _, res := range []resources.ResourceWithDesiredState{
 		{Name: configmapName, Resource: r.configmap, DesiredState: desiredState},
-		{Name: statefulsetName, Resource: r.statefulsets, DesiredState: desiredState},
 		{Name: serviceName, Resource: r.service, DesiredState: desiredState},
 		{Name: serviceHeadlessName, Resource: r.serviceHeadless, DesiredState: desiredState},
 		{Name: serviceExternalName, Resource: r.serviceExternal, DesiredState: desiredState},
+		{Name: statefulsetName, Resource: r.statefulsets, DesiredState: desiredState},
 	} {
 		// skip creation of resource
 		if r.Config.Spec.Broker.ExternalService.Enabled == false && res.Name == serviceExternalName {
@@ -69,7 +69,7 @@ func (r *Reconciler) Reconcile(log logr.Logger) error {
 
 func (r *Reconciler) labels() map[string]string {
 	return map[string]string{
-		"app":             r.Config.ClusterName,
+		"app":             r.Config.Spec.ClusterName,
 		"component":       componentName,
 		"release":         "pinot",
 		"release-version": pinotv1alpha1.OperatorVersion,

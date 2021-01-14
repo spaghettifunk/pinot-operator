@@ -153,7 +153,7 @@ type ControllerConfiguration struct {
 	// +optional
 	VIPHost string `json:"vip.host,omitempty"`
 	// +optional
-	VIPPort string `json:"vip.port,omitempty"`
+	VIPPort int `json:"vip.port,omitempty"`
 	// +optional
 	Service ServiceResourceConfiguration `json:"service,omitempty"`
 	// +optional

@@ -13,12 +13,13 @@ import (
 var controllerConfig = `
 	controller.helix.cluster.name={{clusterName}}
 	controller.port={{controllerPort}}
-	{{#controllerVIPHost}}
+	controller.access.protocols.http.port={{controllerPort}}
+	{{#isVIPHostSet}}
 	controller.vip.host={{controllerVIPHost}}
-	{{/controllerVIPEnabled}}
-	{{#controllerVIPPort}}
+	{{/isVIPHostSet}}
+	{{#isVIPPortSet}}
 	controller.vip.port={{controllerVIPPort}}
-	{{#controllerVIPort}}
+	{{/isVIPPortSet}}
 	controller.data.dir={{controllerDataDir}}
 	controller.zk.str={{zookeeperURL}}
 	pinot.set.instance.id.to.hostname=true
@@ -28,14 +29,19 @@ func (r *Reconciler) configmap() runtime.Object {
 	// TODO: fix name of zookeeper server
 	zookeeperURL := fmt.Sprintf("%s:%s", "pinot-zookeeper", "2181")
 
+	isVIPHostSet := r.Config.Spec.Controller.VIPHost != ""
+	isVIPPortSet := r.Config.Spec.Controller.VIPPort != 0
+
 	return &apiv1.ConfigMap{
-		ObjectMeta: templates.ObjectMetaWithAnnotations(configmapName, r.labels(), templates.DefaultAnnotations(string(r.Config.Spec.Version)), r.Config),
+		ObjectMeta: templates.ObjectMeta(configmapName, r.labels(), r.Config),
 		Data: map[string]string{
-			"pinot-controller.conf": mustache.Render(controllerConfig, map[string]string{
+			"pinot-controller.conf": mustache.Render(controllerConfig, map[string]interface{}{
 				"clusterName":       r.Config.Spec.ClusterName,
 				"controllerPort":    strconv.Itoa(r.Config.Spec.Controller.Service.Port),
+				"isVIPHostSet":      isVIPHostSet,
+				"isVIPPortSet":      isVIPPortSet,
 				"controllerVIPHost": r.Config.Spec.Controller.VIPHost,
-				"controllerVIPPort": r.Config.Spec.Controller.VIPPort,
+				"controllerVIPPort": strconv.Itoa(r.Config.Spec.Controller.VIPPort),
 				"controllerDataDir": "/var/pinot/controller/data",
 				"zookeeperURL":      zookeeperURL,
 			}),

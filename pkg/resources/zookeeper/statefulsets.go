@@ -21,7 +21,7 @@ const (
 
 func (r *Reconciler) statefulsets() runtime.Object {
 	return &appsv1.StatefulSet{
-		ObjectMeta: templates.ObjectMetaWithAnnotations(statefulsetName, r.labels(), templates.DefaultAnnotations(string(r.Config.Spec.Version)), r.Config),
+		ObjectMeta: templates.ObjectMeta(statefulsetName, r.labels(), r.Config),
 		Spec: appsv1.StatefulSetSpec{
 			Replicas:            util.IntPointer(int32(r.Config.Spec.Zookeeper.Replicas)),
 			ServiceName:         serviceHeadlessName,
