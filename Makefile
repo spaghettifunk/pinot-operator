@@ -2,7 +2,7 @@
 # Image URL to use all building/pushing image targets
 IMG ?= davideberdin/pinot-operator:latest
 # Produce CRDs that work back to Kubernetes 1.11 (no version conversion)
-CRD_OPTIONS ?= "crd:trivialVersions=true,maxDescLen=0"
+CRD_OPTIONS ?= crd:crdVersions=v1beta1,maxDescLen=0,preserveUnknownFields=false,trivialVersions=false
 
 # Get the currently used golang install path (in GOPATH/bin, unless GOBIN is set)
 ifeq (,$(shell go env GOBIN))
@@ -15,7 +15,7 @@ all: manager
 
 # Run tests
 test: generate fmt vet manifests
-	$$KUBEBUILDER_ASSETS go test ./... -coverprofile cover.out
+	go test ./... -coverprofile cover.out
 
 # Build manager binary
 manager: generate fmt vet
@@ -78,13 +78,3 @@ CONTROLLER_GEN=$(GOBIN)/controller-gen
 else
 CONTROLLER_GEN=$(shell which controller-gen)
 endif
-
-.PHONY: documentation
-documentation:
-	go get -u github.com/elastic/crd-ref-docs
-	crd-ref-docs \
-		--source-path=./api \
-		--config=./hack/doc_config.yaml \
-		--renderer=asciidoctor \
-		--templates-dir=./docs/templates \
-		--output-path=./docs/output/pinot-operator.asciidoc
