@@ -47,7 +47,7 @@ import (
 	clusterv1alpha1 "github.com/spaghettifunk/pinot-operator/api/v1alpha1"
 )
 
-const finalizerID = "pinot-operator.finalizer.spaghettifunk.io"
+const finalizerID = "pinot-operator.finalizer.apache.io"
 
 var log = logf.Log.WithName("controller")
 var watchCreatedResourcesEvents bool
@@ -77,7 +77,6 @@ func add(mgr manager.Manager, r reconcile.Reconciler) error {
 		return err
 	}
 
-	// TODO(user): Modify this to be the types you create that are owned by the primary resource
 	// Watch for changes to secondary resource Pods and requeue the owner Pinot
 	err = c.Watch(&source.Kind{Type: &corev1.Pod{}}, &handler.EnqueueRequestForOwner{
 		IsController: true,
@@ -99,9 +98,9 @@ type PinotReconciler struct {
 	Scheme *runtime.Scheme
 }
 
+// Reconcile runs the reconciliation loop of the resources
 // +kubebuilder:rbac:groups=apache.io,resources=pinots,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=apache.io,resources=pinots/status,verbs=get;update;patch
-
 func (r *PinotReconciler) Reconcile(request reconcile.Request) (reconcile.Result, error) {
 	logger := log.WithValues("Request.Namespace", request.Namespace, "Request.Name", request.Name)
 

@@ -1,4 +1,4 @@
-# pinot-operator
+# Apache Pinot Kubernetes Operator
 
 A kubernetes operator for Apache Pinot
 
