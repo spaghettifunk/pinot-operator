@@ -1,7 +1,7 @@
 # Image URL to use all building/pushing image targets
-IMG ?= davideberdin/pinot-operator:v0.0.4
+OPERATOR_IMAGE = davideberdin/pinot-operator:v0.0.4
 # Produce CRDs that work back to Kubernetes 1.11 (no version conversion)
-CRD_OPTIONS ?= crd:crdVersions=v1beta1,maxDescLen=0,preserveUnknownFields=false,trivialVersions=false
+CRD_OPTIONS = crd:crdVersions=v1beta1,maxDescLen=0,preserveUnknownFields=false,trivialVersions=false
 
 # Get the currently used golang install path (in GOPATH/bin, unless GOBIN is set)
 ifeq (,$(shell go env GOBIN))
@@ -15,6 +15,9 @@ all: manager
 # Run tests
 test: generate fmt vet manifests
 	go test ./... -coverprofile cover.out
+
+unit-tests: install-tools generate fmt vet manifests ## Run unit tests
+	ginkgo -r --randomizeAllSpecs api/ internal/	
 
 # Build manager binary
 manager: generate fmt vet
@@ -34,7 +37,7 @@ uninstall: manifests
 
 # Deploy controller in the configured Kubernetes cluster in ~/.kube/config
 deploy: manifests
-	cd config/manager && kustomize edit set image controller=${IMG}
+	cd config/manager && kustomize edit set image controller=${OPERATOR_IMAGE}
 	kustomize build config/default | kubectl apply -f -
 
 # Generate manifests e.g. CRD, RBAC etc.
@@ -55,11 +58,43 @@ generate: controller-gen
 
 # Build the docker image
 docker-build: test
-	docker build . -t ${IMG}
+	docker build . -t ${OPERATOR_IMAGE}
 
 # Push the docker image
 docker-push:
-	docker push ${IMG}
+	docker push ${OPERATOR_IMAGE}
+
+git-commit-sha:
+ifeq ("", git diff --stat)
+GIT_COMMIT=$(shell git rev-parse --short HEAD)
+else
+GIT_COMMIT=$(shell git rev-parse --short HEAD)-
+endif
+
+docker-build-dev: check-env-docker-repo  git-commit-sha
+	docker build --build-arg=GIT_COMMIT=$(GIT_COMMIT) -t $(DOCKER_REGISTRY_SERVER)/$(OPERATOR_IMAGE):$(GIT_COMMIT) .
+	docker push $(DOCKER_REGISTRY_SERVER)/$(OPERATOR_IMAGE):$(GIT_COMMIT)
+
+check-env-docker-repo: check-env-registry-server
+ifndef OPERATOR_IMAGE
+	$(error OPERATOR_IMAGE is undefined: path to the Operator image within the registry specified in DOCKER_REGISTRY_SERVER (e.g. davideberdin/pinot-operator - without leading slash))
+endif
+
+check-env-docker-credentials: check-env-registry-server
+ifndef DOCKER_REGISTRY_USERNAME
+	$(error DOCKER_REGISTRY_USERNAME is undefined: Username for accessing the docker registry)
+endif
+ifndef DOCKER_REGISTRY_PASSWORD
+	$(error DOCKER_REGISTRY_PASSWORD is undefined: Password for accessing the docker registry)
+endif
+ifndef DOCKER_REGISTRY_SECRET
+	$(error DOCKER_REGISTRY_SECRET is undefined: Name of Kubernetes secret in which to store the Docker registry username and password)
+endif
+
+check-env-registry-server:
+ifndef DOCKER_REGISTRY_SERVER
+	$(error DOCKER_REGISTRY_SERVER is undefined: URL of docker registry containing the Operator image (e.g. registry.my-company.com))
+endif
 
 # find or download controller-gen
 # download controller-gen if necessary
@@ -77,3 +112,16 @@ CONTROLLER_GEN=$(GOBIN)/controller-gen
 else
 CONTROLLER_GEN=$(shell which controller-gen)
 endif
+
+install-tools:
+	go mod download
+	grep _ tools/tools.go | awk -F '"' '{print $$2}' | xargs -t go install
+
+# documentation
+api-reference: install-tools ## Generate API reference documentation
+	crd-ref-docs \
+		--source-path ./api/v1alpha1 \
+		--config ./docs/api/autogen/config.yaml \
+		--templates-dir ./docs/api/autogen/templates \
+		--output-path ./docs/api/pinot.apache.io.ref.asciidoc \
+		--max-depth 30

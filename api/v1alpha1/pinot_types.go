@@ -31,36 +31,53 @@ const OperatorVersion = "v0.0.1"
 // CommonResourceConfiguration defines basic K8s resource spec configurations
 type CommonResourceConfiguration struct {
 	Resources *corev1.ResourceRequirements `json:"resources,omitempty"`
-	// Optional: node selector to be used by Pinot statefulsets
+	// Node selector to be used by Pinot statefulsets
+	// +optional
 	NodeSelector map[string]string `json:"nodeSelector,omitempty"`
-	// Optional: affinity to be used to for enabling node, pod affinity and anti-affinity
+	// Affinity scheduling rules to be applied on created Pods.
+	// +optional
 	Affinity *v1.Affinity `json:"affinity,omitempty"`
-	// Optional: toleration to be used in order to run Pinot on nodes tainted
+	// Tolerations is the list of Toleration resources attached to each Pod in the Pinot cluster.
+	// +optional
 	Tolerations []v1.Toleration `json:"tolerations,omitempty"`
-	// Optional: custom annotations to be populated in Pinot pods
+	// custom annotations to be populated in Pinot pods
+	// +optional
 	PodAnnotations map[string]string `json:"podAnnotations,omitempty"`
 	// Optional: By default it is set to "parallel"
+	// +optional
 	PodManagementPolicy appsv1.PodManagementPolicyType `json:"podManagementPolicy,omitempty"`
-	// Optional: custom labels to be populated in Pinot pods
-	PodLabels       map[string]string       `json:"podLabels,omitempty"`
+	// custom labels to be populated in Pinot pods
+	// +optional
+	PodLabels map[string]string `json:"podLabels,omitempty"`
+	// +optional
 	SecurityContext *corev1.SecurityContext `json:"securityContext,omitempty"`
-	ReplicaCount    *int32                  `json:"replicaCount,omitempty"`
-	Env             []corev1.EnvVar         `json:"env,omitempty"`
+	// +kubebuilder:validation:Minimum:=0
+	// +kubebuilder:default:=1
+	ReplicaCount *int32 `json:"replicaCount,omitempty"`
+	// +optional
+	Env []corev1.EnvVar `json:"env,omitempty"`
 	// Optional: If set to true then operator checks the rollout status of previous version StateSets before updating next.
 	// Used only for updates.
+	// +optional
 	RollingDeploy bool `json:"rollingDeploy,omitempty"`
-	// Optional
+	// +optional
 	UpdateStrategy *appsv1.StatefulSetUpdateStrategy `json:"updateStrategy,omitempty"`
-	// Optional, port is set to pinot.port if not specified with httpGet handler
+	// Port is set to pinot.port if not specified with httpGet handler
+	// +optional
 	LivenessProbe *v1.Probe `json:"livenessProbe,omitempty"`
-	// Optional, port is set to pinot.port if not specified with httpGet handler
+	// Port is set to pinot.port if not specified with httpGet handler
+	// +optional
 	ReadinessProbe *v1.Probe `json:"readinessProbe,omitempty"`
-	// Optional: StartupProbe for nodeSpec
+	// StartupProbe for nodeSpec
+	// +optional
 	StartUpProbes *v1.Probe `json:"startUpProbes,omitempty"`
-	// Optional: volumes etc for the Pinot pods
+	// Volumes etc for the Pinot pods
+	// +optional
 	VolumeClaimTemplates []v1.PersistentVolumeClaim `json:"volumeClaimTemplates,omitempty"`
-	VolumeMounts         []v1.VolumeMount           `json:"volumeMounts,omitempty"`
-	Volumes              []v1.Volume                `json:"volumes,omitempty"`
+	// +optional
+	VolumeMounts []v1.VolumeMount `json:"volumeMounts,omitempty"`
+	// +optional
+	Volumes []v1.Volume `json:"volumes,omitempty"`
 }
 
 // ServiceResourceConfiguration defines some definition for a service resource
@@ -86,11 +103,13 @@ type PinotVersion string
 type PinotSpec struct {
 	// Required: cluster name for the pinot deployment
 	ClusterName string `json:"clusterName"`
-	// +optional
+	// +kubebuilder:default:="0.6.0"
 	Version PinotVersion `json:"version"`
-	// +optional
+	// Image is the name of the Apache Pinot docker image to use for Brokers/Coordinator/Server nodes in the Pinot cluster.
+	// Must be provided together with ImagePullSecrets in order to use an image in a private registry.
+	// +kubebuilder:default:="apachepinot/pinot:latest"
 	Image *string `json:"image,omitempty"`
-	// Optional: imagePullSecrets for private registries
+	// List of Secret resource containing access credentials to the registry for the Apache Pinot image. Required if the docker registry is private.
 	// +optional
 	ImagePullSecrets []v1.LocalObjectReference `json:"imagePullSecrets,omitempty"`
 	// Optional: image pull policy for the docker image
@@ -99,15 +118,19 @@ type PinotSpec struct {
 	// Optional: log4j config file directory
 	// +optional
 	Log4jConfigPath string `json:"log4j.path,omitempty"`
-	// Components for the Pinot cluster
+	// The desired state of the Controller service to create for the cluster.
 	// +optional
 	Controller *ControllerConfiguration `json:"controller"`
+	// The desired state of the Broker service to create for the cluster.
 	// +optional
 	Broker *BrokerConfiguration `json:"broker"`
+	// The desired state of the Server service to create for the cluster.
 	// +optional
 	Server *ServerConfiguration `json:"server"`
+	// The desired state of the Zookeeper service to create for the cluster.
 	// +optional
 	Zookeeper *ZookeeperConfiguration `json:"zookeeper"`
+	// The desired state of the DeepStorage service to create for the cluster.
 	// +optional
 	DeepStorage *DeepStorageConfiguration `json:"deepStorage,omitempty"`
 }
@@ -116,7 +139,7 @@ type PinotSpec struct {
 type ControllerConfiguration struct {
 	// +optional
 	CommonResourceConfiguration `json:",inline"`
-	// +optional
+	// +kubebuilder:default:="1Gi"
 	DiskSize string `json:"diskSize,omitempty"`
 	// +optional
 	JvmOptions string `json:"jvmOptions,omitempty"`
@@ -146,7 +169,7 @@ type BrokerConfiguration struct {
 type ServerConfiguration struct {
 	// +optional
 	CommonResourceConfiguration `json:",inline"`
-	// +optional
+	// +kubebuilder:default:="4Gi"
 	DiskSize string `json:"diskSize,omitempty"`
 	// +optional
 	JvmOptions string `json:"jvmOptions,omitempty"`
@@ -164,7 +187,7 @@ type ZookeeperConfiguration struct {
 	Replicas int `json:"replicas,omitempty"`
 	// +optional
 	Resources *corev1.ResourceRequirements `json:"resources,omitempty"`
-	// +optional
+	// +kubebuilder:default:="5Gi"
 	Storage *zookeeperStorage `json:"storage,omitempty"`
 	// +optional
 	JvmOptions string `json:"jvmOptions,omitempty"`

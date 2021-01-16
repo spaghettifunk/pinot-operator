@@ -4,6 +4,7 @@ go 1.13
 
 require (
 	github.com/banzaicloud/k8s-objectmatcher v1.4.0
+	github.com/elastic/crd-ref-docs v0.0.6
 	github.com/go-logr/logr v0.1.0
 	github.com/goph/emperror v0.17.2
 	github.com/hoisie/mustache v0.0.0-20160804235033-6375acf62c69

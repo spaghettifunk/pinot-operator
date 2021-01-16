@@ -91,9 +91,6 @@ func (r *Pinot) Default() {
 	if r.Spec.Controller.Service.Port == 0 {
 		r.Spec.Controller.Service.Port = 9000
 	}
-	if r.Spec.Controller.DiskSize == "" {
-		r.Spec.Controller.DiskSize = "1G"
-	}
 	if r.Spec.Controller.JvmOptions == "" {
 		r.Spec.Controller.JvmOptions = "-Xms256M -Xmx1G -XX:+UseG1GC -XX:MaxGCPauseMillis=200"
 	}
@@ -126,9 +123,6 @@ func (r *Pinot) Default() {
 	if r.Spec.Server.Resources == nil {
 		r.Spec.Server.Resources = defaultResources
 	}
-	if r.Spec.Server.DiskSize == "" {
-		r.Spec.Server.DiskSize = "4G"
-	}
 	// zookeeper
 	if r.Spec.Zookeeper == nil {
 		r.Spec.Zookeeper = &ZookeeperConfiguration{
@@ -143,9 +137,6 @@ func (r *Pinot) Default() {
 	}
 	if r.Spec.Zookeeper.JvmOptions == "" {
 		r.Spec.Zookeeper.JvmOptions = "-Xmx2G -Xms2G"
-	}
-	if r.Spec.Zookeeper.Storage.Size == "" {
-		r.Spec.Zookeeper.Storage.Size = "5Gi"
 	}
 }
 
