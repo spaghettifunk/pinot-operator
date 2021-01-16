@@ -1,7 +1,0 @@
-apiVersion: apache.io/v1alpha1
-kind: Pinot
-metadata:
-  name: pinot-sample
-  namespace: pinot
-spec:  
-  clusterName: pinot-cluster

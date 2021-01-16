@@ -1,5 +1,5 @@
 /*
-Copyright 2021 The Pinot Operator authors.
+Copyright 2021 the Apache Pinot Kubernetes Operator authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -85,7 +85,6 @@ func add(mgr manager.Manager, r reconcile.Reconciler) error {
 	if err != nil {
 		return err
 	}
-
 	return nil
 }
 
@@ -98,10 +97,13 @@ type PinotReconciler struct {
 	Scheme *runtime.Scheme
 }
 
-// Reconcile runs the reconciliation loop of the resources
-// +kubebuilder:rbac:groups=apache.io,resources=pinots,verbs=get;list;watch;create;update;patch;delete
-// +kubebuilder:rbac:groups=apache.io,resources=pinots/status,verbs=get;update;patch
-func (r *PinotReconciler) Reconcile(request reconcile.Request) (reconcile.Result, error) {
+// +kubebuilder:rbac:groups=operators.apache.io,resources=pinots,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups=operators.apache.io,resources=pinots/status,verbs=get;update;patch
+// +kubebuilder:rbac:groups=operators,resources=configmaps;statefulsets;services;secrets;poddisruptionbudgets,verbs=get;list;watch;create;update;delete
+// +kubebuilder:rbac:groups=policy;apps,resources=poddisruptionbudgets;statefulsets,verbs=*
+// +kubebuilder:rbac:groups="",resources=events;statefulsets;configmaps;services;poddisruptionbudgets,verbs=get;list;watch;create;update;delete
+
+func (r *PinotReconciler) Reconcile(request ctrl.Request) (ctrl.Result, error) {
 	logger := log.WithValues("Request.Namespace", request.Namespace, "Request.Name", request.Name)
 
 	// Fetch the Pinot instance
@@ -121,9 +123,6 @@ func (r *PinotReconciler) Reconcile(request reconcile.Request) (reconcile.Result
 	}
 
 	logger.Info("Reconciling Pinot")
-
-	// Set default values where not set
-	pinotv1alpha1.SetDefaults(config)
 
 	// start reconciling loop
 	result, err := r.reconcile(logger, config)
@@ -234,7 +233,6 @@ func RemoveFinalizers(c client.Client) error {
 			return emperror.Wrap(err, "could not update status of Pinot resource")
 		}
 	}
-
 	return nil
 }
 

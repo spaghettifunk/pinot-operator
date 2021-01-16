@@ -7,7 +7,45 @@ metadata:
   name: manager-role
 rules:
 - apiGroups:
-  - apache.io
+  - ""
+  resources:
+  - configmaps
+  - events
+  - poddisruptionbudgets
+  - services
+  - statefulsets
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - update
+  - watch
+- apiGroups:
+  - apps
+  - policy
+  resources:
+  - poddisruptionbudgets
+  - statefulsets
+  verbs:
+  - '*'
+- apiGroups:
+  - operators
+  resources:
+  - configmaps
+  - poddisruptionbudgets
+  - secrets
+  - services
+  - statefulsets
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - update
+  - watch
+- apiGroups:
+  - operators.apache.io
   resources:
   - pinots
   verbs:
@@ -19,7 +57,7 @@ rules:
   - update
   - watch
 - apiGroups:
-  - apache.io
+  - operators.apache.io
   resources:
   - pinots/status
   verbs:

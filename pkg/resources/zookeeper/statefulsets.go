@@ -16,7 +16,9 @@ import (
 )
 
 const (
-	jvmDefaultOptions = "-XX:+PrintGCDetails -XX:+PrintGCDateStamps -XX:+PrintGCApplicationStoppedTime -XX:+PrintGCApplicationConcurrentTime"
+	zookeeperImageHub     = "zookeeper"
+	zookeeperImageVersion = "3.5.5"
+	jvmDefaultOptions     = "-XX:+PrintGCDetails -XX:+PrintGCDateStamps -XX:+PrintGCApplicationStoppedTime -XX:+PrintGCApplicationConcurrentTime"
 )
 
 func (r *Reconciler) statefulsets() runtime.Object {
@@ -56,7 +58,7 @@ func (r *Reconciler) containers() []apiv1.Container {
 	containers := []apiv1.Container{
 		{
 			Name:            componentName,
-			Image:           *r.Config.Spec.Zookeeper.Image,
+			Image:           fmt.Sprintf("%s:%s", zookeeperImageHub, zookeeperImageVersion),
 			ImagePullPolicy: r.Config.Spec.ImagePullPolicy,
 			Command: []string{
 				"/bin/bash",

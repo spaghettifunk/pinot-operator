@@ -1,5 +1,5 @@
 /*
-Copyright 2021 The Pinot Operator authors.
+Copyright 2021 the Apache Pinot Kubernetes Operator authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -19,44 +19,14 @@ package v1alpha1
 import (
 	"encoding/json"
 
-	"github.com/spaghettifunk/pinot-operator/pkg/util"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/util/intstr"
 )
 
 // OperatorVersion current operator version
 const OperatorVersion = "v0.0.1"
-
-// ServicePort extends the corev1 ServicePort object
-type ServicePort struct {
-	corev1.ServicePort `json:",inline"`
-	TargetPort         *int32 `json:"targetPort,omitempty"`
-}
-
-// ServicePorts is an array of ServicePort
-type ServicePorts []ServicePort
-
-// Convert wraps the corev1.ServicePort object into a ServicePort
-func (ps ServicePorts) Convert() []corev1.ServicePort {
-	ports := make([]corev1.ServicePort, 0)
-	for _, po := range ps {
-		port := corev1.ServicePort{
-			Name:     po.Name,
-			Protocol: po.Protocol,
-			Port:     po.Port,
-			NodePort: po.NodePort,
-		}
-		if po.TargetPort != nil {
-			port.TargetPort = intstr.FromInt(int(util.PointerToInt32(po.TargetPort)))
-		}
-		ports = append(ports, port)
-	}
-
-	return ports
-}
 
 // CommonResourceConfiguration defines basic K8s resource spec configurations
 type CommonResourceConfiguration struct {
@@ -218,6 +188,9 @@ type PinotStatus struct {
 	ErrorMessage string      `json:"ErrorMessage,omitempty"`
 }
 
+// +kubebuilder:object:root=true
+// +kubebuilder:subresource:status
+
 // Pinot is the Schema for the pinots API
 // +genclient
 // +kubebuilder:resource:shortName=pn
@@ -230,6 +203,8 @@ type Pinot struct {
 	Spec   PinotSpec   `json:"spec,omitempty"`
 	Status PinotStatus `json:"status,omitempty"`
 }
+
+// +kubebuilder:object:root=true
 
 // PinotList contains a list of Pinot
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object

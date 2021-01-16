@@ -1,7 +1,7 @@
-domain: spaghettifunk.io
+domain: apache.io
 repo: github.com/spaghettifunk/pinot-operator
 resources:
-- group: cluster
+- group: operators
   kind: Pinot
   version: v1alpha1
 version: "2"
