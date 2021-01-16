@@ -1,6 +1,6 @@
 module github.com/spaghettifunk/pinot-operator
 
-go 1.13
+go 1.15
 
 require (
 	github.com/banzaicloud/k8s-objectmatcher v1.4.0

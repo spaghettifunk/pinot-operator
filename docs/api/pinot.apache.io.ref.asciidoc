@@ -1,0 +1,289 @@
+// Generated documentation. Please do not edit.
+:anchor_prefix: k8s-api
+
+[id="{p}-api-reference"]
+= API Reference
+
+.Packages
+- xref:{anchor_prefix}-operators-apache-io-v1alpha1[$$operators.apache.io/v1alpha1$$]
+
+
+[id="{anchor_prefix}-operators-apache-io-v1alpha1"]
+== operators.apache.io/v1alpha1
+
+Package v1alpha1 contains API Schema definitions for the operators v1alpha1 API group
+
+.Resource Types
+- xref:{anchor_prefix}-github-com-spaghettifunk-pinot-operator-api-v1alpha1-pinot[$$Pinot$$]
+- xref:{anchor_prefix}-github-com-spaghettifunk-pinot-operator-api-v1alpha1-pinotlist[$$PinotList$$]
+
+
+=== Definitions
+
+[id="{anchor_prefix}-github-com-spaghettifunk-pinot-operator-api-v1alpha1-brokerconfiguration"]
+==== BrokerConfiguration 
+
+BrokerConfiguration defines the k8s spec configuration for the Pinot broker
+
+.Appears In:
+****
+- xref:{anchor_prefix}-github-com-spaghettifunk-pinot-operator-api-v1alpha1-pinotspec[$$PinotSpec$$]
+****
+
+[cols="25a,75a", options="header"]
+|===
+| Field | Description
+| *`CommonResourceConfiguration`* __xref:{anchor_prefix}-github-com-spaghettifunk-pinot-operator-api-v1alpha1-commonresourceconfiguration[$$CommonResourceConfiguration$$]__ | 
+| *`jvmOptions`* __string__ | 
+| *`service`* __xref:{anchor_prefix}-github-com-spaghettifunk-pinot-operator-api-v1alpha1-serviceresourceconfiguration[$$ServiceResourceConfiguration$$]__ | 
+| *`externalService`* __xref:{anchor_prefix}-github-com-spaghettifunk-pinot-operator-api-v1alpha1-externalserviceresourceconfiguration[$$ExternalServiceResourceConfiguration$$]__ | 
+|===
+
+
+[id="{anchor_prefix}-github-com-spaghettifunk-pinot-operator-api-v1alpha1-commonresourceconfiguration"]
+==== CommonResourceConfiguration 
+
+CommonResourceConfiguration defines basic K8s resource spec configurations
+
+.Appears In:
+****
+- xref:{anchor_prefix}-github-com-spaghettifunk-pinot-operator-api-v1alpha1-brokerconfiguration[$$BrokerConfiguration$$]
+- xref:{anchor_prefix}-github-com-spaghettifunk-pinot-operator-api-v1alpha1-controllerconfiguration[$$ControllerConfiguration$$]
+- xref:{anchor_prefix}-github-com-spaghettifunk-pinot-operator-api-v1alpha1-serverconfiguration[$$ServerConfiguration$$]
+****
+
+[cols="25a,75a", options="header"]
+|===
+| Field | Description
+| *`resources`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.20/#resourcerequirements-v1-core[$$ResourceRequirements$$]__ | 
+| *`nodeSelector`* __object (keys:string, values:string)__ | Node selector to be used by Pinot statefulsets
+| *`affinity`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.20/#affinity-v1-core[$$Affinity$$]__ | Affinity scheduling rules to be applied on created Pods.
+| *`tolerations`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.20/#toleration-v1-core[$$Toleration$$] array__ | Tolerations is the list of Toleration resources attached to each Pod in the Pinot cluster.
+| *`podAnnotations`* __object (keys:string, values:string)__ | custom annotations to be populated in Pinot pods
+| *`podManagementPolicy`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.20/#podmanagementpolicytype-v1-apps[$$PodManagementPolicyType$$]__ | Optional: By default it is set to "parallel"
+| *`podLabels`* __object (keys:string, values:string)__ | custom labels to be populated in Pinot pods
+| *`securityContext`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.20/#securitycontext-v1-core[$$SecurityContext$$]__ | 
+| *`replicaCount`* __integer__ | 
+| *`env`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.20/#envvar-v1-core[$$EnvVar$$] array__ | 
+| *`rollingDeploy`* __boolean__ | Optional: If set to true then operator checks the rollout status of previous version StateSets before updating next. Used only for updates.
+| *`updateStrategy`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.20/#statefulsetupdatestrategy-v1-apps[$$StatefulSetUpdateStrategy$$]__ | 
+| *`livenessProbe`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.20/#probe-v1-core[$$Probe$$]__ | Port is set to pinot.port if not specified with httpGet handler
+| *`readinessProbe`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.20/#probe-v1-core[$$Probe$$]__ | Port is set to pinot.port if not specified with httpGet handler
+| *`startUpProbes`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.20/#probe-v1-core[$$Probe$$]__ | StartupProbe for nodeSpec
+| *`volumeClaimTemplates`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.20/#persistentvolumeclaim-v1-core[$$PersistentVolumeClaim$$] array__ | Volumes etc for the Pinot pods
+| *`volumeMounts`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.20/#volumemount-v1-core[$$VolumeMount$$] array__ | 
+| *`volumes`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.20/#volume-v1-core[$$Volume$$] array__ | 
+|===
+
+
+[id="{anchor_prefix}-github-com-spaghettifunk-pinot-operator-api-v1alpha1-controllerconfiguration"]
+==== ControllerConfiguration 
+
+ControllerConfiguration defines the k8s spec configuration for the Pinot controller
+
+.Appears In:
+****
+- xref:{anchor_prefix}-github-com-spaghettifunk-pinot-operator-api-v1alpha1-pinotspec[$$PinotSpec$$]
+****
+
+[cols="25a,75a", options="header"]
+|===
+| Field | Description
+| *`CommonResourceConfiguration`* __xref:{anchor_prefix}-github-com-spaghettifunk-pinot-operator-api-v1alpha1-commonresourceconfiguration[$$CommonResourceConfiguration$$]__ | 
+| *`diskSize`* __string__ | 
+| *`jvmOptions`* __string__ | 
+| *`vip.host`* __string__ | 
+| *`vip.port`* __integer__ | 
+| *`service`* __xref:{anchor_prefix}-github-com-spaghettifunk-pinot-operator-api-v1alpha1-serviceresourceconfiguration[$$ServiceResourceConfiguration$$]__ | 
+| *`externalService`* __xref:{anchor_prefix}-github-com-spaghettifunk-pinot-operator-api-v1alpha1-externalserviceresourceconfiguration[$$ExternalServiceResourceConfiguration$$]__ | 
+|===
+
+
+[id="{anchor_prefix}-github-com-spaghettifunk-pinot-operator-api-v1alpha1-deepstorageconfiguration"]
+==== DeepStorageConfiguration 
+
+DeepStorageConfiguration defines the desired state of the DeepStorege
+
+.Appears In:
+****
+- xref:{anchor_prefix}-github-com-spaghettifunk-pinot-operator-api-v1alpha1-pinotspec[$$PinotSpec$$]
+****
+
+[cols="25a,75a", options="header"]
+|===
+| Field | Description
+| *`spec`* __integer array__ | 
+|===
+
+
+[id="{anchor_prefix}-github-com-spaghettifunk-pinot-operator-api-v1alpha1-externalserviceresourceconfiguration"]
+==== ExternalServiceResourceConfiguration 
+
+ExternalServiceResourceConfiguration defines some definition for a service resource
+
+.Appears In:
+****
+- xref:{anchor_prefix}-github-com-spaghettifunk-pinot-operator-api-v1alpha1-brokerconfiguration[$$BrokerConfiguration$$]
+- xref:{anchor_prefix}-github-com-spaghettifunk-pinot-operator-api-v1alpha1-controllerconfiguration[$$ControllerConfiguration$$]
+****
+
+[cols="25a,75a", options="header"]
+|===
+| Field | Description
+| *`enabled`* __boolean__ | 
+| *`annotations`* __object (keys:string, values:string)__ | 
+| *`type`* __string__ | 
+| *`port`* __integer__ | 
+|===
+
+
+[id="{anchor_prefix}-github-com-spaghettifunk-pinot-operator-api-v1alpha1-pinot"]
+==== Pinot 
+
+Pinot is the Schema for the pinots API
+
+.Appears In:
+****
+- xref:{anchor_prefix}-github-com-spaghettifunk-pinot-operator-api-v1alpha1-pinotlist[$$PinotList$$]
+****
+
+[cols="25a,75a", options="header"]
+|===
+| Field | Description
+| *`apiVersion`* __string__ | `operators.apache.io/v1alpha1`
+| *`kind`* __string__ | `Pinot`
+| *`TypeMeta`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.20/#typemeta-v1-meta[$$TypeMeta$$]__ | 
+| *`metadata`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.20/#objectmeta-v1-meta[$$ObjectMeta$$]__ | Refer to Kubernetes API documentation for fields of `metadata`.
+
+| *`spec`* __xref:{anchor_prefix}-github-com-spaghettifunk-pinot-operator-api-v1alpha1-pinotspec[$$PinotSpec$$]__ | 
+| *`status`* __xref:{anchor_prefix}-github-com-spaghettifunk-pinot-operator-api-v1alpha1-pinotstatus[$$PinotStatus$$]__ | 
+|===
+
+
+[id="{anchor_prefix}-github-com-spaghettifunk-pinot-operator-api-v1alpha1-pinotlist"]
+==== PinotList 
+
+PinotList contains a list of Pinot
+
+
+
+[cols="25a,75a", options="header"]
+|===
+| Field | Description
+| *`apiVersion`* __string__ | `operators.apache.io/v1alpha1`
+| *`kind`* __string__ | `PinotList`
+| *`TypeMeta`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.20/#typemeta-v1-meta[$$TypeMeta$$]__ | 
+| *`metadata`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.20/#listmeta-v1-meta[$$ListMeta$$]__ | Refer to Kubernetes API documentation for fields of `metadata`.
+
+| *`items`* __xref:{anchor_prefix}-github-com-spaghettifunk-pinot-operator-api-v1alpha1-pinot[$$Pinot$$]__ | 
+|===
+
+
+[id="{anchor_prefix}-github-com-spaghettifunk-pinot-operator-api-v1alpha1-pinotspec"]
+==== PinotSpec 
+
+PinotSpec defines the desired state of Pinot
+
+.Appears In:
+****
+- xref:{anchor_prefix}-github-com-spaghettifunk-pinot-operator-api-v1alpha1-pinot[$$Pinot$$]
+****
+
+[cols="25a,75a", options="header"]
+|===
+| Field | Description
+| *`clusterName`* __string__ | Required: cluster name for the pinot deployment
+| *`version`* __PinotVersion__ | 
+| *`image`* __string__ | Image is the name of the Apache Pinot docker image to use for Brokers/Coordinator/Server nodes in the Pinot cluster. Must be provided together with ImagePullSecrets in order to use an image in a private registry.
+| *`imagePullSecrets`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.20/#localobjectreference-v1-core[$$LocalObjectReference$$]__ | List of Secret resource containing access credentials to the registry for the Apache Pinot image. Required if the docker registry is private.
+| *`imagePullPolicy`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.20/#pullpolicy-v1-core[$$PullPolicy$$]__ | Optional: image pull policy for the docker image
+| *`log4j.path`* __string__ | Optional: log4j config file directory
+| *`controller`* __xref:{anchor_prefix}-github-com-spaghettifunk-pinot-operator-api-v1alpha1-controllerconfiguration[$$ControllerConfiguration$$]__ | The desired state of the Controller service to create for the cluster.
+| *`broker`* __xref:{anchor_prefix}-github-com-spaghettifunk-pinot-operator-api-v1alpha1-brokerconfiguration[$$BrokerConfiguration$$]__ | The desired state of the Broker service to create for the cluster.
+| *`server`* __xref:{anchor_prefix}-github-com-spaghettifunk-pinot-operator-api-v1alpha1-serverconfiguration[$$ServerConfiguration$$]__ | The desired state of the Server service to create for the cluster.
+| *`zookeeper`* __xref:{anchor_prefix}-github-com-spaghettifunk-pinot-operator-api-v1alpha1-zookeeperconfiguration[$$ZookeeperConfiguration$$]__ | The desired state of the Zookeeper service to create for the cluster.
+| *`deepStorage`* __xref:{anchor_prefix}-github-com-spaghettifunk-pinot-operator-api-v1alpha1-deepstorageconfiguration[$$DeepStorageConfiguration$$]__ | The desired state of the DeepStorage service to create for the cluster.
+|===
+
+
+[id="{anchor_prefix}-github-com-spaghettifunk-pinot-operator-api-v1alpha1-pinotstatus"]
+==== PinotStatus 
+
+PinotStatus defines the observed state of Pinot
+
+.Appears In:
+****
+- xref:{anchor_prefix}-github-com-spaghettifunk-pinot-operator-api-v1alpha1-pinot[$$Pinot$$]
+****
+
+[cols="25a,75a", options="header"]
+|===
+| Field | Description
+| *`Status`* __ConfigState__ | 
+| *`ErrorMessage`* __string__ | 
+|===
+
+
+[id="{anchor_prefix}-github-com-spaghettifunk-pinot-operator-api-v1alpha1-serverconfiguration"]
+==== ServerConfiguration 
+
+ServerConfiguration defines the k8s spec configuration for the Pinot server
+
+.Appears In:
+****
+- xref:{anchor_prefix}-github-com-spaghettifunk-pinot-operator-api-v1alpha1-pinotspec[$$PinotSpec$$]
+****
+
+[cols="25a,75a", options="header"]
+|===
+| Field | Description
+| *`CommonResourceConfiguration`* __xref:{anchor_prefix}-github-com-spaghettifunk-pinot-operator-api-v1alpha1-commonresourceconfiguration[$$CommonResourceConfiguration$$]__ | 
+| *`diskSize`* __string__ | 
+| *`jvmOptions`* __string__ | 
+| *`service`* __xref:{anchor_prefix}-github-com-spaghettifunk-pinot-operator-api-v1alpha1-serviceresourceconfiguration[$$ServiceResourceConfiguration$$]__ | 
+| *`adminPort`* __integer__ | 
+|===
+
+
+[id="{anchor_prefix}-github-com-spaghettifunk-pinot-operator-api-v1alpha1-serviceresourceconfiguration"]
+==== ServiceResourceConfiguration 
+
+ServiceResourceConfiguration defines some definition for a service resource
+
+.Appears In:
+****
+- xref:{anchor_prefix}-github-com-spaghettifunk-pinot-operator-api-v1alpha1-brokerconfiguration[$$BrokerConfiguration$$]
+- xref:{anchor_prefix}-github-com-spaghettifunk-pinot-operator-api-v1alpha1-controllerconfiguration[$$ControllerConfiguration$$]
+- xref:{anchor_prefix}-github-com-spaghettifunk-pinot-operator-api-v1alpha1-serverconfiguration[$$ServerConfiguration$$]
+****
+
+[cols="25a,75a", options="header"]
+|===
+| Field | Description
+| *`annotations`* __object (keys:string, values:string)__ | 
+| *`type`* __string__ | 
+| *`port`* __integer__ | 
+| *`nodePort`* __integer__ | 
+|===
+
+
+[id="{anchor_prefix}-github-com-spaghettifunk-pinot-operator-api-v1alpha1-zookeeperconfiguration"]
+==== ZookeeperConfiguration 
+
+ZookeeperConfiguration defines the desired state of Zookeeper
+
+.Appears In:
+****
+- xref:{anchor_prefix}-github-com-spaghettifunk-pinot-operator-api-v1alpha1-pinotspec[$$PinotSpec$$]
+****
+
+[cols="25a,75a", options="header"]
+|===
+| Field | Description
+| *`replicas`* __integer__ | 
+| *`resources`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.20/#resourcerequirements-v1-core[$$ResourceRequirements$$]__ | 
+| *`storage`* __xref:{anchor_prefix}-github-com-spaghettifunk-pinot-operator-api-v1alpha1-zookeeperstorage[$$zookeeperStorage$$]__ | 
+| *`jvmOptions`* __string__ | 
+|===
+
+

@@ -1,7 +1,12 @@
+# runs the target list by default
+.DEFAULT_GOAL = list
+
+.PHONY: list
+
 # Image URL to use all building/pushing image targets
 OPERATOR_IMAGE = davideberdin/pinot-operator:v0.0.4
 # Produce CRDs that work back to Kubernetes 1.11 (no version conversion)
-CRD_OPTIONS = crd:crdVersions=v1beta1,maxDescLen=0,preserveUnknownFields=false,trivialVersions=false
+CRD_OPTIONS = crd:maxDescLen=0,trivialVersions=false
 
 # Get the currently used golang install path (in GOPATH/bin, unless GOBIN is set)
 ifeq (,$(shell go env GOBIN))
@@ -9,6 +14,11 @@ GOBIN=$(shell go env GOPATH)/bin
 else
 GOBIN=$(shell go env GOBIN)
 endif
+
+# Insert a comment starting with '##' after a target, and it will be printed by 'make' and 'make list'
+list:    ## list Makefile targets
+	@echo "The most used targets: \n"
+	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-20s\033[0m %s\n", $$1, $$2}'
 
 all: manager
 
@@ -41,8 +51,8 @@ deploy: manifests
 	kustomize build config/default | kubectl apply -f -
 
 # Generate manifests e.g. CRD, RBAC etc.
-manifests: controller-gen
-	$(CONTROLLER_GEN) $(CRD_OPTIONS) rbac:roleName=manager-role webhook paths="./..." output:crd:artifacts:config=config/crd/bases
+manifests:
+	$(CONTROLLER_GEN) $(CRD_OPTIONS) rbac:roleName=operator-role paths="./api/...;./controllers/..." output:crd:artifacts:config=config/crd/bases	
 
 # Run go fmt against code
 fmt:
@@ -53,7 +63,7 @@ vet:
 	go vet ./...
 
 # Generate code
-generate: controller-gen
+generate: api-reference
 	$(CONTROLLER_GEN) object:headerFile="hack/boilerplate.go.txt" paths="./..."
 
 # Build the docker image
@@ -125,3 +135,8 @@ api-reference: install-tools ## Generate API reference documentation
 		--templates-dir ./docs/api/autogen/templates \
 		--output-path ./docs/api/pinot.apache.io.ref.asciidoc \
 		--max-depth 30
+
+# Builds a single-file installation manifest to deploy the Operator
+generate-installation-manifest:
+	mkdir -p releases
+	kustomize build config/installation/ > releases/pinot-cluster-operator.yaml

@@ -124,6 +124,9 @@ func (r *PinotReconciler) Reconcile(request ctrl.Request) (ctrl.Result, error) {
 
 	logger.Info("Reconciling Pinot")
 
+	// set defaults
+	config.SetDefaults()
+
 	// start reconciling loop
 	result, err := r.reconcile(logger, config)
 	if err != nil {
@@ -217,13 +220,6 @@ func updateStatus(c client.Client, config *pinotv1alpha1.Pinot, status pinotv1al
 // RemoveFinalizers removes the finalizers from the context
 func RemoveFinalizers(c client.Client) error {
 	var pinots pinotv1alpha1.PinotList
-
-	// fix this!
-	// err := c.List(context.TODO(), &client.ListOptions{}, &pinots)
-	// if err != nil {
-	// 	return emperror.Wrap(err, "could not list Pinot resources")
-	// }
-
 	for _, pinot := range pinots.Items {
 		pinot.ObjectMeta.Finalizers = util.RemoveString(pinot.ObjectMeta.Finalizers, finalizerID)
 		if err := c.Update(context.Background(), &pinot); err != nil {
