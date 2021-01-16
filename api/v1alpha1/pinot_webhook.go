@@ -31,14 +31,10 @@ import (
 const (
 	pinotImageHub     = "apachepinot/pinot"
 	pinotImageVersion = "latest"
-	// zookeeper image
-	zookeeperImageHub     = "zookeeper"
-	zookeeperImageVersion = "3.5.5"
 	// replicas
 	defaultReplicaCount = 1
 	defaultMinReplicas  = 1
 	defaultMaxReplicas  = 5
-	// resources
 )
 
 var defaultResources = &apiv1.ResourceRequirements{
@@ -139,9 +135,6 @@ func (r *Pinot) Default() {
 			Storage: &zookeeperStorage{},
 		}
 	}
-	if r.Spec.Zookeeper.Image == nil {
-		r.Spec.Zookeeper.Image = util.StrPointer(fmt.Sprintf("%s:%s", zookeeperImageHub, zookeeperImageVersion))
-	}
 	if r.Spec.Zookeeper.Replicas == 0 {
 		r.Spec.Zookeeper.Replicas = 1
 	}
@@ -154,14 +147,6 @@ func (r *Pinot) Default() {
 	if r.Spec.Zookeeper.Storage.Size == "" {
 		r.Spec.Zookeeper.Storage.Size = "5Gi"
 	}
-
-	// TODO: DeepStorage
-	// if r.Spec.DeepStorage.Image == nil {
-	// 	r.Spec.DeepStorage.Image = util.StrPointer(defaultControllerImage)
-	// }
-	// if r.Spec.DeepStorage.Resources == nil {
-	// 	r.Spec.DeepStorage.Resources = defaultResources
-	// }
 }
 
 // +kubebuilder:webhook:verbs=create;update,path=/validate-operators-apache-io-v1alpha1-pinot,mutating=false,failurePolicy=fail,groups=operators.apache.io,resources=pinots,versions=v1alpha1,name=vpinot.kb.io

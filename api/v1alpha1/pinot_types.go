@@ -189,6 +189,7 @@ type PinotStatus struct {
 }
 
 // +kubebuilder:object:root=true
+// +kubebuilder:subresource:status
 
 // Pinot is the Schema for the pinots API
 // +genclient

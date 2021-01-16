@@ -100,7 +100,7 @@ type PinotReconciler struct {
 // +kubebuilder:rbac:groups=operators.apache.io,resources=pinots,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=operators.apache.io,resources=pinots/status,verbs=get;update;patch
 // +kubebuilder:rbac:groups=operators,resources=configmaps;statefulsets;services;secrets;poddisruptionbudgets,verbs=get;list;watch;create;update;delete
-// +kubebuilder:rbac:groups=policy;apps,resources=poddisruptionbudgets;deployments,verbs=*
+// +kubebuilder:rbac:groups=policy;apps,resources=poddisruptionbudgets;statefulsets,verbs=*
 // +kubebuilder:rbac:groups="",resources=events;statefulsets;configmaps;services;poddisruptionbudgets,verbs=get;list;watch;create;update;delete
 
 func (r *PinotReconciler) Reconcile(request ctrl.Request) (ctrl.Result, error) {
