@@ -13,7 +13,7 @@ jobs:
       - name: Checkout operator codebase
         uses: actions/checkout@v2
         with:
-          path: cluster-operator
+          path: pinot-operator
       - name: Checkout wiki codebase
         uses: actions/checkout@v2
         with:
@@ -21,9 +21,7 @@ jobs:
           path: wiki
       - name: Push to wiki
         run: |
-          ls -al
           cd wiki
-          ls -al
           git config --local user.email "github-actions@github.com"
           git config --local user.name "github-actions"
           cp ../pinot-operator/docs/api/pinot.apache.io.ref.asciidoc ./api_reference.asciidoc
