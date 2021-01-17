@@ -279,9 +279,10 @@ ZookeeperConfiguration defines the desired state of Zookeeper
 [cols="25a,75a", options="header"]
 |===
 | Field | Description
-| *`replicas`* __integer__ | Replicas is the number of nodes in the zookeeper servuce. Each node is deployed as a Replica in a StatefulSet. Only 1, 3, 5 replicas clusters are tested. This value should be an odd number to ensure the resultant cluster can establish exactly one quorum of nodes in the event of a fragmenting network partition.
+| *`image`* __string__ | Image is the name of the Apache Zookeeper docker image
+| *`replicaCount`* __integer__ | ReplicaCount is the number of nodes in the zookeeper service. Each node is deployed as a Replica in a StatefulSet. Only 1, 3, 5 replicas clusters are tested. This value should be an odd number to ensure the resultant cluster can establish exactly one quorum of nodes in the event of a fragmenting network partition.
 | *`resources`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.20/#resourcerequirements-v1-core[$$ResourceRequirements$$]__ | The desired compute resource requirements of Pods in the cluster.
-| *`storage`* __xref:{anchor_prefix}-github-com-spaghettifunk-pinot-operator-api-v1alpha1-zookeeperstorage[$$zookeeperStorage$$]__ | 
+| *`storage`* __xref:{anchor_prefix}-github-com-spaghettifunk-pinot-operator-api-v1alpha1-zookeeperstorage[$$zookeeperStorage$$]__ | Defines the inner parameters for setting up the storage
 | *`jvmOptions`* __string__ | Extra JVM parameters to be passed to the zookeeper service
 |===
 

@@ -5,3 +5,4 @@ metadata:
   namespace: pinot
 spec:  
   clusterName: pinot-cluster
+  version: "0.6.0"

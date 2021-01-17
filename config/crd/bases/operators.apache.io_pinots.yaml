@@ -4104,11 +4104,15 @@ spec:
                 type: string
               zookeeper:
                 properties:
+                  image:
+                    default: zookeeper:3.5.5
+                    type: string
                   jvmOptions:
                     default: -Xmx2G -Xms2G
                     type: string
-                  replicas:
+                  replicaCount:
                     default: 1
+                    format: int32
                     minimum: 0
                     type: integer
                   resources:
@@ -4139,10 +4143,12 @@ spec:
                     type: object
                   storage:
                     properties:
-                      size:
+                      storage:
                         default: 5Gi
                         type: string
                     type: object
+                required:
+                - image
                 type: object
             required:
             - clusterName

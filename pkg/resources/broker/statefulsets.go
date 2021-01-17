@@ -66,7 +66,7 @@ func (r *Reconciler) containers() []apiv1.Container {
 				"/var/pinot/broker/config/pinot-broker.conf",
 			},
 			Env:            r.envs(),
-			Resources:      *r.Config.Spec.Broker.Resources,
+			Resources:      r.Config.Spec.Broker.Resources,
 			LivenessProbe:  templates.DefaultLivenessProbe("/health", r.Config.Spec.Broker.Service.Port, 60, 30),
 			ReadinessProbe: templates.DefaultReadinessProbe("/health", r.Config.Spec.Broker.Service.Port, 60, 30),
 			Ports: []apiv1.ContainerPort{

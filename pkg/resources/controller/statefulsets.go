@@ -61,7 +61,7 @@ func (r *Reconciler) containers() []apiv1.Container {
 				"/var/pinot/controller/config/pinot-controller.conf",
 			},
 			Env:       r.envs(),
-			Resources: *r.Config.Spec.Controller.Resources,
+			Resources: r.Config.Spec.Controller.Resources,
 			Ports: []apiv1.ContainerPort{
 				templates.DefaultContainerPort("", r.Config.Spec.Controller.Service.Port, apiv1.ProtocolTCP),
 			},

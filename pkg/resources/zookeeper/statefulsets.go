@@ -25,7 +25,7 @@ func (r *Reconciler) statefulsets() runtime.Object {
 	return &appsv1.StatefulSet{
 		ObjectMeta: templates.ObjectMeta(statefulsetName, r.labels(), r.Config),
 		Spec: appsv1.StatefulSetSpec{
-			Replicas:            util.IntPointer(int32(r.Config.Spec.Zookeeper.Replicas)),
+			Replicas:            r.Config.Spec.Zookeeper.ReplicaCount,
 			ServiceName:         serviceHeadlessName,
 			PodManagementPolicy: appsv1.ParallelPodManagement,
 			Selector: &v1.LabelSelector{
@@ -58,7 +58,7 @@ func (r *Reconciler) containers() []apiv1.Container {
 	containers := []apiv1.Container{
 		{
 			Name:            componentName,
-			Image:           fmt.Sprintf("%s:%s", zookeeperImageHub, zookeeperImageVersion),
+			Image:           *r.Config.Spec.Zookeeper.Image,
 			ImagePullPolicy: r.Config.Spec.ImagePullPolicy,
 			Command: []string{
 				"/bin/bash",
@@ -66,7 +66,7 @@ func (r *Reconciler) containers() []apiv1.Container {
 				"/config-scripts/run",
 			},
 			Env:       r.envs(),
-			Resources: *r.Config.Spec.Zookeeper.Resources,
+			Resources: r.Config.Spec.Zookeeper.Resources,
 			LivenessProbe: &apiv1.Probe{
 				Handler: apiv1.Handler{
 					Exec: &apiv1.ExecAction{
@@ -113,7 +113,7 @@ func (r *Reconciler) envs() []apiv1.EnvVar {
 	envs := []apiv1.EnvVar{
 		{
 			Name:  "ZK_REPLICAS",
-			Value: strconv.Itoa(r.Config.Spec.Zookeeper.Replicas),
+			Value: strconv.Itoa(int(util.PointerToInt32(r.Config.Spec.Zookeeper.ReplicaCount))),
 		},
 		{
 			Name:  "JMXAUTH",

@@ -4111,6 +4111,9 @@ spec:
                 type: string
               zookeeper:
                 properties:
+                  image:
+                    default: zookeeper:3.5.5
+                    type: string
                   jvmOptions:
                     default: -Xmx2G -Xms2G
                     type: string
@@ -4150,6 +4153,8 @@ spec:
                         default: 5Gi
                         type: string
                     type: object
+                required:
+                - image
                 type: object
             required:
             - clusterName
@@ -4345,7 +4350,7 @@ spec:
         - --enable-leader-election
         command:
         - /manager
-        image: davideberdin/pinot-operator:v0.0.5
+        image: davideberdin/pinot-operator:v0.0.6
         name: manager
         resources:
           limits:

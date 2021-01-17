@@ -30,7 +30,7 @@ const OperatorVersion = "v0.0.1"
 // CommonResourceConfiguration defines basic K8s resource spec configurations
 type CommonResourceConfiguration struct {
 	// +kubebuilder:default:={limits: {cpu: "512m", memory: "2Gi"}, requests: {cpu: "256m", memory: "1Gi"}}
-	Resources *corev1.ResourceRequirements `json:"resources,omitempty" protobuf:"bytes,1,opt,name=resources"`
+	Resources corev1.ResourceRequirements `json:"resources,omitempty" protobuf:"bytes,1,opt,name=resources"`
 	// Node selector to be used by Pinot statefulsets
 	// +optional
 	NodeSelector map[string]string `json:"nodeSelector,omitempty" protobuf:"bytes,2,opt,name=nodeSelector"`
@@ -166,19 +166,19 @@ type PinotSpec struct {
 	Log4jConfigPath string `json:"log4j.path,omitempty"`
 	// The desired state of the Controller service to create for the cluster.
 	// +optional
-	Controller *ControllerConfiguration `json:"controller"`
+	Controller ControllerConfiguration `json:"controller"`
 	// The desired state of the Broker service to create for the cluster.
 	// +optional
-	Broker *BrokerConfiguration `json:"broker"`
+	Broker BrokerConfiguration `json:"broker,omitempty"`
 	// The desired state of the Server service to create for the cluster.
 	// +optional
-	Server *ServerConfiguration `json:"server"`
+	Server ServerConfiguration `json:"server,omitempty"`
 	// The desired state of the Zookeeper service to create for the cluster.
 	// +optional
-	Zookeeper *ZookeeperConfiguration `json:"zookeeper"`
+	Zookeeper ZookeeperConfiguration `json:"zookeeper,omitempty"`
 	// The desired state of the DeepStorage service to create for the cluster.
 	// +optional
-	DeepStorage *DeepStorageConfiguration `json:"deepStorage,omitempty"`
+	DeepStorage DeepStorageConfiguration `json:"deepStorage,omitempty"`
 }
 
 // ControllerConfiguration defines the k8s spec configuration for the Pinot controller
@@ -235,21 +235,21 @@ type ServerConfiguration struct {
 
 // ZookeeperConfiguration defines the desired state of Zookeeper
 type ZookeeperConfiguration struct {
-	// Image is the name of the Apache Zookeeper docker image.
-	// Must be provided together with ImagePullSecrets in order to use an image in a private registry.
-	// +optional
-	Image *string `json:"-"`
-	// Replicas is the number of nodes in the zookeeper servuce. Each node is deployed as a Replica in a StatefulSet. Only 1, 3, 5 replicas clusters are tested.
+	// Image is the name of the Apache Zookeeper docker image
+	// +kubebuilder:default:="zookeeper:3.5.5"
+	Image *string `json:"image"`
+	// ReplicaCount is the number of nodes in the zookeeper service. Each node is deployed as a Replica in a StatefulSet. Only 1, 3, 5 replicas clusters are tested.
 	// This value should be an odd number to ensure the resultant cluster can establish exactly one quorum of nodes
 	// in the event of a fragmenting network partition.
 	// +kubebuilder:validation:Minimum:=0
 	// +kubebuilder:default:=1
-	Replicas int `json:"replicas,omitempty"`
+	ReplicaCount *int32 `json:"replicaCount,omitempty"`
 	// The desired compute resource requirements of Pods in the cluster.
 	// +kubebuilder:default:={limits: {cpu: "512m", memory: "2Gi"}, requests: {cpu: "256m", memory: "1Gi"}}
-	Resources *corev1.ResourceRequirements `json:"resources,omitempty"`
+	Resources corev1.ResourceRequirements `json:"resources,omitempty"`
+	// Defines the inner parameters for setting up the storage
 	// +optional
-	Storage *zookeeperStorage `json:"storage,omitempty"`
+	Storage zookeeperStorage `json:"storage,omitempty"`
 	// Extra JVM parameters to be passed to the zookeeper service
 	// +kubebuilder:default:="-Xmx2G -Xms2G"
 	JvmOptions string `json:"jvmOptions,omitempty"`
@@ -257,9 +257,11 @@ type ZookeeperConfiguration struct {
 
 // zookeeperStorage defines the inner parameters for setting up the storage
 type zookeeperStorage struct {
-	// Size of the persisten disk for the server service
+	// The requested size of the persistent volume attached to each Pod in the RabbitmqCluster.
+	// The format of this field matches that defined by kubernetes/apimachinery.
+	// See https://pkg.go.dev/k8s.io/apimachinery/pkg/api/resource#Quantity for more info on the format of this field.
 	// +kubebuilder:default:="5Gi"
-	Size string `json:"size,omitempty"`
+	Size string `json:"storage,omitempty"`
 }
 
 // DeepStorageConfiguration defines the desired state of the DeepStorege

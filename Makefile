@@ -4,7 +4,7 @@
 .PHONY: list
 
 # Image URL to use all building/pushing image targets
-OPERATOR_IMAGE = davideberdin/pinot-operator:v0.0.5
+OPERATOR_IMAGE = davideberdin/pinot-operator:v0.0.6
 # Produce CRDs that work back to Kubernetes 1.11 (no version conversion)
 CRD_OPTIONS = crd:crdVersions={v1},maxDescLen=0,trivialVersions=false
 
