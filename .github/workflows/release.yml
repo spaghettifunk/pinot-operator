@@ -1,0 +1,16 @@
+name: Release
+on:
+  push:
+    tags:
+    - 'v*.*.*'
+
+jobs:
+  kubectl_rabbitmq:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@main
+    - name: Update new version in krew-index
+      uses: rajatjindal/krew-release-bot@v0.0.38
+      with:
+        krew_template_file: hack/pinot.yaml
