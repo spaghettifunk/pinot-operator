@@ -17,6 +17,24 @@ The Pinot operator includes, but is not limited to, the following features:
 - **Simplified Deployment Configuration**: Configure the fundamentals of Brokers/Controller/Server like versions, persistence,
   retention policies, and replicas from a native Kubernetes resource.
 
+## Quickstart
+
+If you have a running Kubernetes cluster and `kubectl` configured to access it, run the following command to install the operator:
+
+```bash
+kubectl apply -f https://github.com/spaghettifunk/pinot-operator/releases/latest/download/pinot-cluster-operator.yml
+```
+
+Then you can deploy a Pinot cluster:
+
+```bash
+kubectl apply -f https://raw.githubusercontent.com/spaghettifunk/pinot-operator/main/docs/examples/hello-world/pinot.yaml
+```
+
+<p align="center">
+  <img width="100%" src="./docs/demos/installation.svg">
+</p>
+
 ## Install kubebuilder
 
 If you are on `mac os x` you can install `kubebuilder` with `brew install kubebuilder`. Bare in mind that the `brew` command install only the binary of tool.

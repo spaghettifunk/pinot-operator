@@ -97,11 +97,15 @@ type PinotReconciler struct {
 	Scheme *runtime.Scheme
 }
 
-// +kubebuilder:rbac:groups=operators.apache.io,resources=pinots,verbs=get;list;watch;create;update;patch;delete
+// the rbac rule requires an empty row at the end to render
+// +kubebuilder:rbac:groups=operators.apache.io,resources=pinots,verbs=get;list;watch;create;update
 // +kubebuilder:rbac:groups=operators.apache.io,resources=pinots/status,verbs=get;update;patch
+// +kubebuilder:rbac:groups=operators.apache.io,resources=pinots/finalizers,verbs=update
 // +kubebuilder:rbac:groups=operators,resources=configmaps;statefulsets;services;secrets;poddisruptionbudgets,verbs=get;list;watch;create;update;delete
 // +kubebuilder:rbac:groups=policy;apps,resources=poddisruptionbudgets;statefulsets,verbs=*
 // +kubebuilder:rbac:groups="",resources=events;statefulsets;configmaps;services;poddisruptionbudgets,verbs=get;list;watch;create;update;delete
+// +kubebuilder:rbac:groups="rbac.authorization.k8s.io",resources=roles,verbs=get;list;watch;create;update
+// +kubebuilder:rbac:groups="rbac.authorization.k8s.io",resources=rolebindings,verbs=get;list;watch;create;update
 
 func (r *PinotReconciler) Reconcile(request ctrl.Request) (ctrl.Result, error) {
 	logger := log.WithValues("Request.Namespace", request.Namespace, "Request.Name", request.Name)

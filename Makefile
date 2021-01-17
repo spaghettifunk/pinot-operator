@@ -4,9 +4,9 @@
 .PHONY: list
 
 # Image URL to use all building/pushing image targets
-OPERATOR_IMAGE = davideberdin/pinot-operator:v0.0.4
+OPERATOR_IMAGE = davideberdin/pinot-operator:v0.0.5
 # Produce CRDs that work back to Kubernetes 1.11 (no version conversion)
-CRD_OPTIONS = crd:maxDescLen=0,trivialVersions=false
+CRD_OPTIONS = crd:crdVersions={v1},maxDescLen=0,trivialVersions=false
 
 # Get the currently used golang install path (in GOPATH/bin, unless GOBIN is set)
 ifeq (,$(shell go env GOBIN))

@@ -1,3 +1,8 @@
+# Adds namespace to all resources.
+namespace: pinot-operator-system
+
+namePrefix: pinot-operator-
+
 resources:
 - role.yaml
 - role_binding.yaml

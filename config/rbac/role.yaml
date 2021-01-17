@@ -50,12 +50,16 @@ rules:
   - pinots
   verbs:
   - create
-  - delete
   - get
   - list
-  - patch
   - update
   - watch
+- apiGroups:
+  - operators.apache.io
+  resources:
+  - pinots/finalizers
+  verbs:
+  - update
 - apiGroups:
   - operators.apache.io
   resources:
@@ -64,3 +68,23 @@ rules:
   - get
   - patch
   - update
+- apiGroups:
+  - rbac.authorization.k8s.io
+  resources:
+  - rolebindings
+  verbs:
+  - create
+  - get
+  - list
+  - update
+  - watch
+- apiGroups:
+  - rbac.authorization.k8s.io
+  resources:
+  - roles
+  verbs:
+  - create
+  - get
+  - list
+  - update
+  - watch
