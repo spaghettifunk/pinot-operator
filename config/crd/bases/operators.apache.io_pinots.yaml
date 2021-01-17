@@ -8,13 +8,20 @@ metadata:
   creationTimestamp: null
   name: pinots.operators.apache.io
 spec:
+  additionalPrinterColumns:
+  - JSONPath: .metadata.creationTimestamp
+    name: Age
+    type: date
+  - JSONPath: .status.clusterStatus
+    name: Status
+    type: string
   group: operators.apache.io
   names:
     kind: Pinot
     listKind: PinotList
     plural: pinots
     shortNames:
-    - pn
+    - apc
     singular: pinot
   scope: Namespaced
   subresources:
@@ -357,13 +364,20 @@ spec:
                         type: string
                       type: object
                     enabled:
+                      default: false
                       type: boolean
                     port:
                       type: integer
                     type:
+                      default: LoadBalancer
+                      enum:
+                      - ClusterIP
+                      - LoadBalancer
+                      - NodePort
                       type: string
                   type: object
                 jvmOptions:
+                  default: -Xms256M -Xmx1G -XX:+UseG1GC -XX:MaxGCPauseMillis=200
                   type: string
                 livenessProbe:
                   properties:
@@ -511,6 +525,13 @@ spec:
                   minimum: 0
                   type: integer
                 resources:
+                  default:
+                    limits:
+                      cpu: 512m
+                      memory: 2Gi
+                    requests:
+                      cpu: 256m
+                      memory: 1Gi
                   properties:
                     limits:
                       additionalProperties:
@@ -584,70 +605,12 @@ spec:
                     port:
                       type: integer
                     type:
+                      default: ClusterIP
+                      enum:
+                      - ClusterIP
+                      - LoadBalancer
+                      - NodePort
                       type: string
-                  type: object
-                startUpProbes:
-                  properties:
-                    exec:
-                      properties:
-                        command:
-                          items:
-                            type: string
-                          type: array
-                      type: object
-                    failureThreshold:
-                      format: int32
-                      type: integer
-                    httpGet:
-                      properties:
-                        host:
-                          type: string
-                        httpHeaders:
-                          items:
-                            properties:
-                              name:
-                                type: string
-                              value:
-                                type: string
-                            required:
-                            - name
-                            - value
-                            type: object
-                          type: array
-                        path:
-                          type: string
-                        port:
-                          anyOf:
-                          - type: string
-                          - type: integer
-                        scheme:
-                          type: string
-                      required:
-                      - port
-                      type: object
-                    initialDelaySeconds:
-                      format: int32
-                      type: integer
-                    periodSeconds:
-                      format: int32
-                      type: integer
-                    successThreshold:
-                      format: int32
-                      type: integer
-                    tcpSocket:
-                      properties:
-                        host:
-                          type: string
-                        port:
-                          anyOf:
-                          - type: string
-                          - type: integer
-                      required:
-                      - port
-                      type: object
-                    timeoutSeconds:
-                      format: int32
-                      type: integer
                   type: object
                 tolerations:
                   items:
@@ -1715,13 +1678,20 @@ spec:
                         type: string
                       type: object
                     enabled:
+                      default: false
                       type: boolean
                     port:
                       type: integer
                     type:
+                      default: LoadBalancer
+                      enum:
+                      - ClusterIP
+                      - LoadBalancer
+                      - NodePort
                       type: string
                   type: object
                 jvmOptions:
+                  default: -Xms256M -Xmx1G -XX:+UseG1GC -XX:MaxGCPauseMillis=200
                   type: string
                 livenessProbe:
                   properties:
@@ -1869,6 +1839,13 @@ spec:
                   minimum: 0
                   type: integer
                 resources:
+                  default:
+                    limits:
+                      cpu: 512m
+                      memory: 2Gi
+                    requests:
+                      cpu: 256m
+                      memory: 1Gi
                   properties:
                     limits:
                       additionalProperties:
@@ -1942,70 +1919,12 @@ spec:
                     port:
                       type: integer
                     type:
+                      default: ClusterIP
+                      enum:
+                      - ClusterIP
+                      - LoadBalancer
+                      - NodePort
                       type: string
-                  type: object
-                startUpProbes:
-                  properties:
-                    exec:
-                      properties:
-                        command:
-                          items:
-                            type: string
-                          type: array
-                      type: object
-                    failureThreshold:
-                      format: int32
-                      type: integer
-                    httpGet:
-                      properties:
-                        host:
-                          type: string
-                        httpHeaders:
-                          items:
-                            properties:
-                              name:
-                                type: string
-                              value:
-                                type: string
-                            required:
-                            - name
-                            - value
-                            type: object
-                          type: array
-                        path:
-                          type: string
-                        port:
-                          anyOf:
-                          - type: string
-                          - type: integer
-                        scheme:
-                          type: string
-                      required:
-                      - port
-                      type: object
-                    initialDelaySeconds:
-                      format: int32
-                      type: integer
-                    periodSeconds:
-                      format: int32
-                      type: integer
-                    successThreshold:
-                      format: int32
-                      type: integer
-                    tcpSocket:
-                      properties:
-                        host:
-                          type: string
-                        port:
-                          anyOf:
-                          - type: string
-                          - type: integer
-                      required:
-                      - port
-                      type: object
-                    timeoutSeconds:
-                      format: int32
-                      type: integer
                   type: object
                 tolerations:
                   items:
@@ -3091,6 +3010,7 @@ spec:
                     type: object
                   type: array
                 jvmOptions:
+                  default: -Xms256M -Xmx1G -XX:+UseG1GC -XX:MaxGCPauseMillis=200
                   type: string
                 livenessProbe:
                   properties:
@@ -3238,6 +3158,13 @@ spec:
                   minimum: 0
                   type: integer
                 resources:
+                  default:
+                    limits:
+                      cpu: 512m
+                      memory: 2Gi
+                    requests:
+                      cpu: 256m
+                      memory: 1Gi
                   properties:
                     limits:
                       additionalProperties:
@@ -3311,70 +3238,12 @@ spec:
                     port:
                       type: integer
                     type:
+                      default: ClusterIP
+                      enum:
+                      - ClusterIP
+                      - LoadBalancer
+                      - NodePort
                       type: string
-                  type: object
-                startUpProbes:
-                  properties:
-                    exec:
-                      properties:
-                        command:
-                          items:
-                            type: string
-                          type: array
-                      type: object
-                    failureThreshold:
-                      format: int32
-                      type: integer
-                    httpGet:
-                      properties:
-                        host:
-                          type: string
-                        httpHeaders:
-                          items:
-                            properties:
-                              name:
-                                type: string
-                              value:
-                                type: string
-                            required:
-                            - name
-                            - value
-                            type: object
-                          type: array
-                        path:
-                          type: string
-                        port:
-                          anyOf:
-                          - type: string
-                          - type: integer
-                        scheme:
-                          type: string
-                      required:
-                      - port
-                      type: object
-                    initialDelaySeconds:
-                      format: int32
-                      type: integer
-                    periodSeconds:
-                      format: int32
-                      type: integer
-                    successThreshold:
-                      format: int32
-                      type: integer
-                    tcpSocket:
-                      properties:
-                        host:
-                          type: string
-                        port:
-                          anyOf:
-                          - type: string
-                          - type: integer
-                      required:
-                      - port
-                      type: object
-                    timeoutSeconds:
-                      format: int32
-                      type: integer
                   type: object
                 tolerations:
                   items:
@@ -4116,10 +3985,20 @@ spec:
             zookeeper:
               properties:
                 jvmOptions:
+                  default: -Xmx2G -Xms2G
                   type: string
                 replicas:
+                  default: 1
+                  minimum: 0
                   type: integer
                 resources:
+                  default:
+                    limits:
+                      cpu: 512m
+                      memory: 2Gi
+                    requests:
+                      cpu: 256m
+                      memory: 1Gi
                   properties:
                     limits:
                       additionalProperties:
@@ -4131,9 +4010,9 @@ spec:
                       type: object
                   type: object
                 storage:
-                  default: 5Gi
                   properties:
                     size:
+                      default: 5Gi
                       type: string
                   type: object
               type: object

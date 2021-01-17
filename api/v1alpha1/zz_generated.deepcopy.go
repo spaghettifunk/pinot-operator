@@ -118,11 +118,6 @@ func (in *CommonResourceConfiguration) DeepCopyInto(out *CommonResourceConfigura
 		*out = new(v1.Probe)
 		(*in).DeepCopyInto(*out)
 	}
-	if in.StartUpProbes != nil {
-		in, out := &in.StartUpProbes, &out.StartUpProbes
-		*out = new(v1.Probe)
-		(*in).DeepCopyInto(*out)
-	}
 	if in.VolumeClaimTemplates != nil {
 		in, out := &in.VolumeClaimTemplates, &out.VolumeClaimTemplates
 		*out = make([]v1.PersistentVolumeClaim, len(*in))
