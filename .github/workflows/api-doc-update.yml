@@ -21,7 +21,9 @@ jobs:
           path: wiki
       - name: Push to wiki
         run: |
+          ls -al
           cd wiki
+          ls -al
           git config --local user.email "github-actions@github.com"
           git config --local user.name "github-actions"
           cp ../pinot-operator/docs/api/pinot.apache.io.ref.asciidoc ./api_reference.asciidoc
