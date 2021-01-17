@@ -1,0 +1,30 @@
+apiVersion: krew.googlecontainertools.github.com/v1alpha2
+kind: Plugin
+metadata:
+  name: pinot
+spec:
+  homepage: https://github.com/spaghettifunk/pinot-operator
+  shortDescription: Manage Apache Pinot clusters
+  version: {{ .TagName }}
+  description: |
+    A plugin providing utilities to operate Apache Pinot clusters deployed
+    by the Pinot cluster operator.
+  caveats: |
+    This plugin requires the Pinot cluster operator to be installed.
+    To install the Pinot cluster operator run `kubectl pinot install-pinot-operator`.
+    `tail` subcommand requires the `tail` plugin. You can install it with `kubectl krew install tail`.
+  platforms:
+  - selector:
+      matchExpressions:
+      - key: os
+        operator: In
+        values:
+        - darwin
+        - linux
+    {{addURIAndSha "https://github.com/spaghettifunk/pinot-operator/archive/{{ .TagName }}.tar.gz" .TagName }}
+    bin: kubectl-pinot
+    files:
+    - from: pinot-operator-*/bin/kubectl-pinot
+      to: .
+    - from: pinot-operator-*/LICENSE.txt
+      to: .
