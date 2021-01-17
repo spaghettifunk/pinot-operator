@@ -1,4 +1,11 @@
-
+apiVersion: v1
+kind: Namespace
+metadata:
+  labels:
+    app: pinot-operator
+    component: pinot-operator
+    release: pinot
+  name: pinot-system
 ---
 apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
@@ -4110,9 +4117,8 @@ spec:
                   jvmOptions:
                     default: -Xmx2G -Xms2G
                     type: string
-                  replicaCount:
+                  replicas:
                     default: 1
-                    format: int32
                     minimum: 0
                     type: integer
                   resources:
@@ -4143,7 +4149,7 @@ spec:
                     type: object
                   storage:
                     properties:
-                      storage:
+                      size:
                         default: 5Gi
                         type: string
                     type: object
@@ -4172,3 +4178,185 @@ status:
     plural: ""
   conditions: []
   storedVersions: []
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: pinot-operator-leader-election-role
+  namespace: pinot-system
+rules:
+- apiGroups:
+  - ""
+  resources:
+  - configmaps
+  verbs:
+  - get
+  - list
+  - watch
+  - create
+  - update
+  - patch
+  - delete
+- apiGroups:
+  - ""
+  resources:
+  - configmaps/status
+  verbs:
+  - get
+  - update
+  - patch
+- apiGroups:
+  - ""
+  resources:
+  - events
+  verbs:
+  - create
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  creationTimestamp: null
+  name: pinot-operator-operator-role
+rules:
+- apiGroups:
+  - ""
+  resources:
+  - configmaps
+  - events
+  - poddisruptionbudgets
+  - services
+  - statefulsets
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - update
+  - watch
+- apiGroups:
+  - apps
+  - policy
+  resources:
+  - poddisruptionbudgets
+  - statefulsets
+  verbs:
+  - '*'
+- apiGroups:
+  - operators
+  resources:
+  - configmaps
+  - poddisruptionbudgets
+  - secrets
+  - services
+  - statefulsets
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - update
+  - watch
+- apiGroups:
+  - operators.apache.io
+  resources:
+  - pinots
+  verbs:
+  - create
+  - get
+  - list
+  - update
+  - watch
+- apiGroups:
+  - operators.apache.io
+  resources:
+  - pinots/finalizers
+  verbs:
+  - update
+- apiGroups:
+  - operators.apache.io
+  resources:
+  - pinots/status
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - rbac.authorization.k8s.io
+  resources:
+  - rolebindings
+  verbs:
+  - create
+  - get
+  - list
+  - update
+  - watch
+- apiGroups:
+  - rbac.authorization.k8s.io
+  resources:
+  - roles
+  verbs:
+  - create
+  - get
+  - list
+  - update
+  - watch
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: pinot-operator-leader-election-rolebinding
+  namespace: pinot-system
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: pinot-operator-leader-election-role
+subjects:
+- kind: ServiceAccount
+  name: default
+  namespace: pinot-system
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: pinot-operator-operator-rolebinding
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: pinot-operator-operator-role
+subjects:
+- kind: ServiceAccount
+  name: default
+  namespace: pinot-system
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    control-plane: controller-manager
+  name: controller-manager
+  namespace: pinot-system
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      control-plane: controller-manager
+  template:
+    metadata:
+      labels:
+        control-plane: controller-manager
+    spec:
+      containers:
+      - args:
+        - --enable-leader-election
+        command:
+        - /manager
+        image: davideberdin/pinot-operator:v0.0.6
+        name: manager
+        resources:
+          limits:
+            cpu: 100m
+            memory: 30Mi
+          requests:
+            cpu: 100m
+            memory: 20Mi
+      terminationGracePeriodSeconds: 10

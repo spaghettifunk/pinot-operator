@@ -1,9 +1,10 @@
 module github.com/spaghettifunk/pinot-operator
 
-go 1.13
+go 1.15
 
 require (
 	github.com/banzaicloud/k8s-objectmatcher v1.4.0
+	github.com/elastic/crd-ref-docs v0.0.6
 	github.com/go-logr/logr v0.1.0
 	github.com/goph/emperror v0.17.2
 	github.com/hoisie/mustache v0.0.0-20160804235033-6375acf62c69
@@ -15,4 +16,5 @@ require (
 	k8s.io/apimachinery v0.18.2
 	k8s.io/client-go v0.18.2
 	sigs.k8s.io/controller-runtime v0.6.0
+	sigs.k8s.io/controller-tools v0.2.5 // indirect
 )
