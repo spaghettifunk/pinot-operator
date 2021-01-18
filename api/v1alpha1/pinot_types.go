@@ -17,15 +17,31 @@ limitations under the License.
 package v1alpha1
 
 import (
-	"encoding/json"
+	"strings"
 
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/types"
 )
 
 // OperatorVersion current operator version
 const OperatorVersion = "v0.0.1"
+
+const (
+	RevisionedAutoInjectionLabelKey = "pinot.io/rev"
+)
+
+func NamespacedNameFromRevision(revision string) types.NamespacedName {
+	nn := types.NamespacedName{}
+	p := strings.SplitN(revision, ".", 2)
+	if len(p) == 2 {
+		nn.Name = p[0]
+		nn.Namespace = p[1]
+	}
+
+	return nn
+}
 
 // CommonResourceConfiguration defines basic K8s resource spec configurations
 type CommonResourceConfiguration struct {
@@ -176,9 +192,6 @@ type PinotSpec struct {
 	// The desired state of the Zookeeper service to create for the cluster.
 	// +optional
 	Zookeeper ZookeeperConfiguration `json:"zookeeper,omitempty"`
-	// The desired state of the DeepStorage service to create for the cluster.
-	// +optional
-	DeepStorage DeepStorageConfiguration `json:"deepStorage,omitempty"`
 }
 
 // ControllerConfiguration defines the k8s spec configuration for the Pinot controller
@@ -237,21 +250,25 @@ type ServerConfiguration struct {
 type ZookeeperConfiguration struct {
 	// Image is the name of the Apache Zookeeper docker image
 	// +kubebuilder:default:="zookeeper:3.5.5"
+	// +optional
 	Image *string `json:"image"`
 	// ReplicaCount is the number of nodes in the zookeeper service. Each node is deployed as a Replica in a StatefulSet. Only 1, 3, 5 replicas clusters are tested.
 	// This value should be an odd number to ensure the resultant cluster can establish exactly one quorum of nodes
 	// in the event of a fragmenting network partition.
 	// +kubebuilder:validation:Minimum:=0
 	// +kubebuilder:default:=1
+	// +optional
 	ReplicaCount *int32 `json:"replicaCount,omitempty"`
 	// The desired compute resource requirements of Pods in the cluster.
 	// +kubebuilder:default:={limits: {cpu: "512m", memory: "2Gi"}, requests: {cpu: "256m", memory: "1Gi"}}
+	// +optional
 	Resources corev1.ResourceRequirements `json:"resources,omitempty"`
 	// Defines the inner parameters for setting up the storage
 	// +optional
 	Storage zookeeperStorage `json:"storage,omitempty"`
 	// Extra JVM parameters to be passed to the zookeeper service
 	// +kubebuilder:default:="-Xmx2G -Xms2G"
+	// +optional
 	JvmOptions string `json:"jvmOptions,omitempty"`
 }
 
@@ -262,12 +279,6 @@ type zookeeperStorage struct {
 	// See https://pkg.go.dev/k8s.io/apimachinery/pkg/api/resource#Quantity for more info on the format of this field.
 	// +kubebuilder:default:="5Gi"
 	Size string `json:"storage,omitempty"`
-}
-
-// DeepStorageConfiguration defines the desired state of the DeepStorege
-type DeepStorageConfiguration struct {
-	// +optional
-	Spec json.RawMessage `json:"spec"`
 }
 
 // PinotStatus defines the observed state of Pinot

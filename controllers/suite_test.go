@@ -1,5 +1,5 @@
 /*
-
+Copyright 2021 the Apache Pinot Kubernetes Operator authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -33,9 +33,6 @@ import (
 	operatorsv1alpha1 "github.com/spaghettifunk/pinot-operator/api/v1alpha1"
 	// +kubebuilder:scaffold:imports
 )
-
-// These tests use Ginkgo (BDD-style Go testing framework). Refer to
-// http://onsi.github.io/ginkgo/ to learn more about Ginkgo.
 
 var cfg *rest.Config
 var k8sClient client.Client

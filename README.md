@@ -17,6 +17,8 @@ The Pinot operator includes, but is not limited to, the following features:
 - **Simplified Deployment Configuration**: Configure the fundamentals of Brokers/Controller/Server like versions, persistence,
   retention policies, and replicas from a native Kubernetes resource.
 
+The operator has been largely inspired by the [BanzaiCloud istio-operator](https://github.com/banzaicloud/istio-operator) and the [RabbitMQ cluster-operator](https://github.com/rabbitmq/cluster-operator). They are great resources to learn how to create operators.
+
 ## Quickstart
 
 If you have a running Kubernetes cluster and `kubectl` configured to access it, run the following command to install the operator:
@@ -33,7 +35,19 @@ kubectl apply -f https://raw.githubusercontent.com/spaghettifunk/pinot-operator/
 
 [![asciicast](https://asciinema.org/a/385228.svg)](https://asciinema.org/a/385228)
 
-## Install kubebuilder
+## How to develop
+
+The operator is based on the `kubebuilder` project and it has being scaffolded with it. To make it run, you need to do a few steps:
+
+1. `make generate` to generate the `deepcopy` files
+2. `make manifests` to generate the correct CRDs
+3. Initiate KinD with `kind create cluster`. If you do not have KinD, check this [page](https://kind.sigs.k8s.io/docs/user/quick-start/#installation) to install it
+4. `make install` to deploy the CRDs to your cluster
+5. `WATCH_NAMESPACE=pinot-system POD_NAMESPACE=pinot-system make run` to run the pinot-controller locally
+
+If you want to stop the controller, press `CTRL-C` and wait 30 seconds for the `stop handler` to complete.
+
+### Install kubebuilder
 
 If you are on `mac os x` you can install `kubebuilder` with `brew install kubebuilder`. Bare in mind that the `brew` command install only the binary of tool.
 To run the tests, you need some extra packages within your `$PATH`. For convenience, there is a file called `hack/install_kubebuilder_pkg.sh` that will pull the extra files and put it

@@ -1,5 +1,5 @@
 /*
-
+Copyright 2021 the Apache Pinot Kubernetes Operator authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -17,6 +17,10 @@ limitations under the License.
 // Package v1alpha1 contains API Schema definitions for the operators v1alpha1 API group
 // +kubebuilder:object:generate=true
 // +groupName=operators.apache.io
+// +k8s:openapi-gen=true
+// +k8s:deepcopy-gen=package,register
+// +k8s:conversion-gen=github.com/spaghettifunk/pinot-operator/api
+// +k8s:defaulter-gen=TypeMeta
 package v1alpha1
 
 import (
@@ -34,3 +38,8 @@ var (
 	// AddToScheme adds the types in this group-version to the given scheme.
 	AddToScheme = SchemeBuilder.AddToScheme
 )
+
+// Resource is required by pkg/client/listers/...
+func Resource(resource string) schema.GroupResource {
+	return GroupVersion.WithResource(resource).GroupResource()
+}
