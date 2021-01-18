@@ -18,8 +18,12 @@ package controllers
 
 import (
 	"context"
+	"flag"
+	"sync"
+	"time"
 
 	"github.com/go-logr/logr"
+	"github.com/gofrs/uuid"
 	"github.com/goph/emperror"
 	"github.com/pkg/errors"
 
@@ -32,14 +36,13 @@ import (
 	k8errors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
+	"k8s.io/client-go/tools/record"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller"
-	"sigs.k8s.io/controller-runtime/pkg/handler"
 	logf "sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
-	"sigs.k8s.io/controller-runtime/pkg/source"
 
 	pinotv1alpha1 "github.com/spaghettifunk/pinot-operator/api/v1alpha1"
 	"github.com/spaghettifunk/pinot-operator/pkg/resources"
@@ -51,53 +54,63 @@ const finalizerID = "pinot-operator.finalizer.apache.io"
 var log = logf.Log.WithName("controller")
 var watchCreatedResourcesEvents bool
 
+func init() {
+	flag.BoolVar(&watchCreatedResourcesEvents, "watch-created-resources-events", true, "Whether to watch created resources events")
+}
+
 // Add creates a new Pinot Controller and adds it to the Manager. The Manager will set fields on the Controller
 // and Start it when the Manager is Started.
 func Add(mgr manager.Manager) error {
-	return add(mgr, newReconciler(mgr))
-}
-
-// newReconciler returns a new reconcile.Reconciler
-func newReconciler(mgr manager.Manager) reconcile.Reconciler {
-	return &PinotReconciler{
-		Client: mgr.GetClient(),
-		Scheme: mgr.GetScheme(),
-	}
-}
-
-// add adds a new Controller to mgr with r as the reconcile.Reconciler
-func add(mgr manager.Manager, r reconcile.Reconciler) error {
-	// Create a new controller
-	c, err := controller.New("pinot-controller", mgr, controller.Options{Reconciler: r})
+	r := newReconciler(mgr)
+	err := newController(mgr, r)
 	if err != nil {
-		return err
-	}
-
-	// Watch for changes to primary resource Pinot
-	err = c.Watch(&source.Kind{Type: &pinotv1alpha1.Pinot{}}, &handler.EnqueueRequestForObject{})
-	if err != nil {
-		return err
-	}
-
-	// Watch for changes to secondary resource Pods and requeue the owner Pinot
-	err = c.Watch(&source.Kind{Type: &corev1.Pod{}}, &handler.EnqueueRequestForOwner{
-		IsController: true,
-		OwnerType:    &pinotv1alpha1.Pinot{},
-	})
-	if err != nil {
-		return err
+		return emperror.Wrap(err, "failed to create controller")
 	}
 	return nil
 }
 
-// PinotReconciler reconciles a Pinot object
-type PinotReconciler struct {
+// newReconciler returns a new reconcile.Reconciler
+func newReconciler(mgr manager.Manager) reconcile.Reconciler {
+	return &ReconcilePinot{
+		Client:   mgr.GetClient(),
+		Scheme:   mgr.GetScheme(),
+		Recorder: mgr.GetEventRecorderFor("pinot-controller"),
+	}
+}
+
+// add adds a new Controller to mgr with r as the reconcile.Reconciler
+func newController(mgr manager.Manager, r reconcile.Reconciler) error {
+	// Create a new controller
+	ctrl, err := controller.New("pinot-controller", mgr, controller.Options{Reconciler: r})
+	if err != nil {
+		return err
+	}
+
+	if r, ok := r.(PinotReconciler); ok {
+		r.setController(ctrl)
+		err = r.initWatches(watchCreatedResourcesEvents)
+		if err != nil {
+			return emperror.Wrapf(err, "could not init watches")
+		}
+	}
+	return nil
+}
+
+var _ reconcile.Reconciler = &ReconcilePinot{}
+
+// ReconcilePinot reconciles a Pinot object
+type ReconcilePinot struct {
 	// This client, initialized using mgr.Client() above, is a split client
 	// that reads objects from the cache and writes to the apiserver
 	client.Client
-	Log    logr.Logger
-	Scheme *runtime.Scheme
+	Log              logr.Logger
+	Scheme           *runtime.Scheme
+	Recorder         record.EventRecorder
+	Ctrl             controller.Controller
+	WatchersInitOnce sync.Once
 }
+
+type ReconcileComponent func(log logr.Logger, istio *pinotv1alpha1.Pinot) error
 
 // the rbac rule requires an empty row at the end to render
 // +kubebuilder:rbac:groups=operators.apache.io,resources=pinots,verbs=get;list;watch;create;update
@@ -109,31 +122,40 @@ type PinotReconciler struct {
 // +kubebuilder:rbac:groups="rbac.authorization.k8s.io",resources=roles,verbs=get;list;watch;create;update
 // +kubebuilder:rbac:groups="rbac.authorization.k8s.io",resources=rolebindings,verbs=get;list;watch;create;update
 
-func (r *PinotReconciler) Reconcile(request ctrl.Request) (ctrl.Result, error) {
-	logger := log.WithValues("Request.Namespace", request.Namespace, "Request.Name", request.Name)
+// Reconcile reads that state of the cluster for a Config object and makes changes based on the state read
+// and what is in the Config.Spec
+func (r *ReconcilePinot) Reconcile(request ctrl.Request) (ctrl.Result, error) {
 
-	// Fetch the Pinot instance
+	logger := log.WithValues("trigger", request.Namespace+"/"+request.Name, "correlationID", uuid.Must(uuid.NewV4()).String())
+
+	// Fetch the Config instance
 	config := &pinotv1alpha1.Pinot{}
-	err := r.Client.Get(context.TODO(), request.NamespacedName, config)
+	err := r.Get(context.TODO(), request.NamespacedName, config)
 	if err != nil {
-		if k8errors.IsNotFound(err) {
-			// Request object not found, could have been deleted after reconcile request.
-			// Owned objects are automatically garbage collected. For additional cleanup logic use finalizers.
-			// Return and don't requeue
-			logger.Info("Pinot resource not found. Ignoring since object must be deleted")
+		if k8serrors.IsNotFound(err) {
 			return reconcile.Result{}, nil
 		}
-		// Error reading the object - requeue the request.
-		logger.Error(err, "Failed to get Pinot")
 		return reconcile.Result{}, err
 	}
 
 	logger.Info("Reconciling Pinot")
 
-	// set defaults
-	config.SetDefaults()
+	err = r.autoSetIstioRevisions(config)
+	if err != nil {
+		updateErr := updateStatus(r.Client, config, pinotv1alpha1.ReconcileFailed, err.Error(), logger)
+		if updateErr != nil {
+			logger.Error(updateErr, "failed to update state")
+			return reconcile.Result{}, errors.WithStack(err)
+		}
+		logger.Error(err, "")
+		return reconcile.Result{
+			RequeueAfter: time.Minute * 5,
+		}, nil
+	}
 
-	// start reconciling loop
+	// Set default values where not set
+	pinotv1alpha1.SetDefaults(config)
+
 	result, err := r.reconcile(logger, config)
 	if err != nil {
 		updateErr := updateStatus(r.Client, config, pinotv1alpha1.ReconcileFailed, err.Error(), logger)
@@ -146,12 +168,43 @@ func (r *PinotReconciler) Reconcile(request ctrl.Request) (ctrl.Result, error) {
 	return result, nil
 }
 
-func (r *PinotReconciler) reconcile(logger logr.Logger, config *pinotv1alpha1.Pinot) (reconcile.Result, error) {
+func (r *ReconcilePinot) setController(ctrl controller.Controller) {
+	r.ctrl = ctrl
+}
+
+func (r *ReconcilePinot) reconcile(logger logr.Logger, config *pinotv1alpha1.Pinot) (reconcile.Result, error) {
 	if config.Status.Status == "" {
 		err := updateStatus(r.Client, config, pinotv1alpha1.Created, "", logger)
 		if err != nil {
 			return reconcile.Result{}, errors.WithStack(err)
 		}
+	}
+
+	// add finalizer strings and update
+	if config.ObjectMeta.DeletionTimestamp.IsZero() {
+		if !util.ContainsString(config.ObjectMeta.Finalizers, finalizerID) {
+			config.ObjectMeta.Finalizers = append(config.ObjectMeta.Finalizers, finalizerID)
+			if err := r.Update(context.Background(), config); err != nil {
+				return reconcile.Result{}, emperror.Wrap(err, "could not add finalizer to config")
+			}
+			return reconcile.Result{
+				RequeueAfter: time.Second * 1,
+			}, nil
+		}
+	} else {
+		// Deletion timestamp set, config is marked for deletion
+		if util.ContainsString(config.ObjectMeta.Finalizers, finalizerID) {
+			if config.Status.Status == pinotv1alhpa1.Reconciling && config.Status.ErrorMessage == "" {
+				logger.Info("cannot remove Istio while reconciling")
+				return reconcile.Result{}, nil
+			}
+			config.ObjectMeta.Finalizers = util.RemoveString(config.ObjectMeta.Finalizers, finalizerID)
+			if err := r.Update(context.Background(), config); err != nil {
+				return reconcile.Result{}, emperror.Wrap(err, "could not remove finalizer from config")
+			}
+		}
+		logger.Info("Pinot removed")
+		return reconcile.Result{}, nil
 	}
 
 	// for each component do a reconciliation
@@ -238,7 +291,7 @@ func RemoveFinalizers(c client.Client) error {
 	return nil
 }
 
-func (r *PinotReconciler) SetupWithManager(mgr ctrl.Manager) error {
+func (r *ReconcilePinot) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&pinotv1alpha1.Pinot{}).
 		Owns(&appsv1.StatefulSet{}).
