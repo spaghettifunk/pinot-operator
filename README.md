@@ -37,7 +37,15 @@ kubectl apply -f https://raw.githubusercontent.com/spaghettifunk/pinot-operator/
 
 ## How to develop
 
-The operator is based on the `kubebuilder` project and it has being scaffolded with it.
+The operator is based on the `kubebuilder` project and it has being scaffolded with it. To make it run, you need to do a few steps:
+
+1. `make generate` to generate the `deepcopy` files
+2. `make manifests` to generate the correct CRDs
+3. Initiate KinD with `kind create cluster`. If you do not have KinD, check this [page](https://kind.sigs.k8s.io/docs/user/quick-start/#installation) to install it
+4. `make install` to deploy the CRDs to your cluster
+5. `WATCH_NAMESPACE=pinot-system POD_NAMESPACE=pinot-system make run` to run the pinot-controller locally
+
+If you want to stop the controller, press `CTRL-C` and wait 30 seconds for the `stop handler` to complete.
 
 ### Install kubebuilder
 
