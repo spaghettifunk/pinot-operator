@@ -18,14 +18,13 @@ import (
 
 // Reconcile .
 func Reconcile(log logr.Logger, client runtimeClient.Client, desired runtime.Object, desiredState DesiredState) error {
-	if desiredState == "" {
+	if desiredState == nil {
 		desiredState = DesiredStatePresent
 	}
 
 	desiredType := reflect.TypeOf(desired)
 	var current = desired.DeepCopyObject()
 	var desiredCopy = desired.DeepCopyObject()
-
 	key, err := runtimeClient.ObjectKeyFromObject(current)
 	if err != nil {
 		return emperror.With(err, "kind", desiredType)
@@ -36,24 +35,52 @@ func Reconcile(log logr.Logger, client runtimeClient.Client, desired runtime.Obj
 	if err != nil && !apierrors.IsNotFound(err) {
 		return emperror.WrapWith(err, "getting resource failed", "kind", desiredType, "name", key.Name)
 	}
-
 	if apierrors.IsNotFound(err) {
-		if desiredState == DesiredStatePresent || desiredState == DesiredStateExists {
+		if desiredState != DesiredStateAbsent {
+			should, err := desiredState.ShouldCreate(current)
+			if err != nil {
+				return emperror.WrapWith(err, "could not execute ShouldCreate func")
+			}
+			if !should {
+				log.V(1).Info("resource should not be created")
+				return nil
+			}
+			if err := desiredState.BeforeCreate(desired); err != nil {
+				return emperror.WrapWith(err, "could not execute BeforeCreate func")
+			}
 			if err := patch.DefaultAnnotator.SetLastAppliedAnnotation(desired); err != nil {
 				log.Error(err, "Failed to set last applied annotation", "desired", desired)
 			}
 			if err := client.Create(context.TODO(), desired); err != nil {
 				return emperror.WrapWith(err, "creating resource failed", "kind", desiredType, "name", key.Name)
 			}
+			if err := desiredState.AfterCreate(desired); err != nil {
+				return emperror.WrapWith(err, "could not execute AfterCreate func")
+			}
 			log.Info("resource created")
 		}
 	} else {
-		if desiredState == DesiredStatePresent {
+		if desiredState != DesiredStateAbsent && desiredState != DesiredStateExists {
+			should, err := desiredState.ShouldUpdate(current, desiredCopy)
+			if err != nil {
+				return emperror.WrapWith(err, "could not execute ShouldUpdate func")
+			}
+			if !should {
+				log.V(1).Info("resource should not be updated")
+				return nil
+			}
+			if err := desiredState.BeforeUpdate(current, desiredCopy); err != nil {
+				return emperror.WrapWith(err, "could not execute BeforeUpdate func")
+			}
+
 			patchResult, err := patch.DefaultPatchMaker.Calculate(current, desired, patch.IgnoreStatusFields())
 			if err != nil {
 				log.Error(err, "could not match objects", "kind", desiredType, "name", key.Name)
 			} else if patchResult.IsEmpty() {
 				log.V(1).Info("resource is in sync")
+				if err := desiredState.AfterUpdate(current, desiredCopy, true); err != nil {
+					return emperror.WrapWith(err, "could not execute AfterUpdate func")
+				}
 				return nil
 			} else {
 				log.V(1).Info("resource diffs",
@@ -79,9 +106,19 @@ func Reconcile(log logr.Logger, client runtimeClient.Client, desired runtime.Obj
 
 			if err := client.Update(context.TODO(), desired); err != nil {
 				if apierrors.IsConflict(err) || apierrors.IsInvalid(err) {
-					log.Info("resource needs to be re-created", "error", err)
-					err := client.Delete(context.TODO(), current)
+					should, err := desiredState.ShouldRecreate(current, desiredCopy)
 					if err != nil {
+						return emperror.WrapWith(err, "could not execute ShoudReCreate func")
+					}
+					if !should {
+						log.V(1).Info("resource should not be re-created")
+						return nil
+					}
+					log.Info("resource needs to be re-created", "error", err)
+					if err := desiredState.BeforeRecreate(current, desiredCopy); err != nil {
+						return emperror.WrapWith(err, "could not execute BeforeRecreate func")
+					}
+					if err := client.Delete(context.TODO(), current); err != nil {
 						return emperror.WrapWith(err, "could not delete resource", "kind", desiredType, "name", key.Name)
 					}
 					log.Info("resource deleted")
@@ -89,15 +126,35 @@ func Reconcile(log logr.Logger, client runtimeClient.Client, desired runtime.Obj
 						return emperror.WrapWith(err, "creating resource failed", "kind", desiredType, "name", key.Name)
 					}
 					log.Info("resource created")
+					if err := desiredState.AfterRecreate(current, desiredCopy); err != nil {
+						return emperror.WrapWith(err, "could not execute AfterRecreate func")
+					}
 					return nil
 				}
 
 				return emperror.WrapWith(err, "updating resource failed", "kind", desiredType, "name", key.Name)
 			}
+			if err := desiredState.AfterUpdate(current, desiredCopy, false); err != nil {
+				return emperror.WrapWith(err, "could not execute AfterUpdate func")
+			}
 			log.Info("resource updated")
 		} else if desiredState == DesiredStateAbsent {
+			should, err := desiredState.ShouldDelete(current)
+			if err != nil {
+				return emperror.WrapWith(err, "could not execute ShouldDelete func")
+			}
+			if !should {
+				log.V(1).Info("resource should not be deleted")
+				return nil
+			}
+			if err := desiredState.BeforeDelete(current); err != nil {
+				return emperror.WrapWith(err, "could not execute BeforeDelete func")
+			}
 			if err := client.Delete(context.TODO(), current); err != nil {
 				return emperror.WrapWith(err, "deleting resource failed", "kind", desiredType, "name", key.Name)
+			}
+			if err := desiredState.AfterDelete(current); err != nil {
+				return emperror.WrapWith(err, "could not execute AfterDelete func")
 			}
 			log.Info("resource deleted")
 		}
@@ -110,6 +167,9 @@ func prepareResourceForUpdate(current, desired runtime.Object) {
 	case *corev1.Service:
 		svc := desired.(*corev1.Service)
 		svc.Spec.ClusterIP = current.(*corev1.Service).Spec.ClusterIP
+	case *corev1.ServiceAccount:
+		sa := desired.(*corev1.ServiceAccount)
+		sa.Secrets = current.(*corev1.ServiceAccount).Secrets
 	}
 }
 
@@ -139,11 +199,12 @@ func IsObjectChanged(oldObj, newObj runtime.Object, ignoreStatusChange bool) (bo
 			return false, nil
 		}
 	}
+
 	return true, nil
 }
 
 // ReconcileNamespaceLabelsIgnoreNotFound patches namespaces by adding/removing labels, returns without error if namespace is not found
-func ReconcileNamespaceLabelsIgnoreNotFound(log logr.Logger, client runtimeClient.Client, namespace string, labels map[string]string, labelsToRemove []string) error {
+func ReconcileNamespaceLabelsIgnoreNotFound(log logr.Logger, client runtimeClient.Client, namespace string, labels map[string]string, labelsToRemove []string, customLabelsToIgnoreReconcile ...string) error {
 	var ns = &corev1.Namespace{}
 	err := client.Get(context.TODO(), runtimeClient.ObjectKey{Name: namespace}, ns)
 	if err != nil {
@@ -151,7 +212,15 @@ func ReconcileNamespaceLabelsIgnoreNotFound(log logr.Logger, client runtimeClien
 			log.V(1).Info("namespace not found, ignoring", "namespace", namespace)
 			return nil
 		}
+
 		return emperror.WrapWith(err, "getting namespace failed", "namespace", namespace)
+	}
+
+	for _, customLabel := range customLabelsToIgnoreReconcile {
+		if _, ok := ns.Labels[customLabel]; ok {
+			log.V(1).Info("namespace has a custom label, ignoring namespace", "namespace", namespace, "customLabel", customLabel)
+			return nil
+		}
 	}
 
 	updateNeeded := false
@@ -176,5 +245,6 @@ func ReconcileNamespaceLabelsIgnoreNotFound(log logr.Logger, client runtimeClien
 		}
 		log.Info("namespace labels reconciled", "namespace", namespace, "labels", labels)
 	}
+
 	return nil
 }

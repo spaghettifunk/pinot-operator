@@ -237,21 +237,25 @@ type ServerConfiguration struct {
 type ZookeeperConfiguration struct {
 	// Image is the name of the Apache Zookeeper docker image
 	// +kubebuilder:default:="zookeeper:3.5.5"
+	// +optional
 	Image *string `json:"image"`
 	// ReplicaCount is the number of nodes in the zookeeper service. Each node is deployed as a Replica in a StatefulSet. Only 1, 3, 5 replicas clusters are tested.
 	// This value should be an odd number to ensure the resultant cluster can establish exactly one quorum of nodes
 	// in the event of a fragmenting network partition.
 	// +kubebuilder:validation:Minimum:=0
 	// +kubebuilder:default:=1
+	// +optional
 	ReplicaCount *int32 `json:"replicaCount,omitempty"`
 	// The desired compute resource requirements of Pods in the cluster.
 	// +kubebuilder:default:={limits: {cpu: "512m", memory: "2Gi"}, requests: {cpu: "256m", memory: "1Gi"}}
+	// +optional
 	Resources corev1.ResourceRequirements `json:"resources,omitempty"`
 	// Defines the inner parameters for setting up the storage
 	// +optional
 	Storage zookeeperStorage `json:"storage,omitempty"`
 	// Extra JVM parameters to be passed to the zookeeper service
 	// +kubebuilder:default:="-Xmx2G -Xms2G"
+	// +optional
 	JvmOptions string `json:"jvmOptions,omitempty"`
 }
 

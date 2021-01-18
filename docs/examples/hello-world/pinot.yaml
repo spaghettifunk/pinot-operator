@@ -6,3 +6,5 @@ metadata:
 spec:  
   clusterName: pinot-cluster
   version: "0.6.0"
+  zookeeper:
+    replicaCount: 1

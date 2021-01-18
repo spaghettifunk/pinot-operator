@@ -4147,8 +4147,6 @@ spec:
                         default: 5Gi
                         type: string
                     type: object
-                required:
-                - image
                 type: object
             required:
             - clusterName

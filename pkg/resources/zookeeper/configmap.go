@@ -125,6 +125,7 @@ const (
 	maxClientsConnections = 60
 	snapRetailCount       = 3
 	purgeInterval         = 0
+	zookeeperID           = "myid"
 )
 
 func (r *Reconciler) configmap() runtime.Object {
@@ -154,6 +155,7 @@ func (r *Reconciler) configmap() runtime.Object {
 				"electionPort":          strconv.Itoa(zookeeperElectionPort),
 				"configFilePath":        fmt.Sprintf("%s/%s", configDir, configFilename),
 				"log4jPropertiesPath":   fmt.Sprintf("%s/%s", configDir, log4jFilename),
+				"zookeeperId":           zookeeperID,
 			}),
 		},
 	}

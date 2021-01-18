@@ -27,6 +27,7 @@ import (
 	pinotcontroller "github.com/spaghettifunk/pinot-operator/pkg/resources/controller"
 	pinotserver "github.com/spaghettifunk/pinot-operator/pkg/resources/server"
 	pinotzookeeper "github.com/spaghettifunk/pinot-operator/pkg/resources/zookeeper"
+	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	k8errors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -43,8 +44,6 @@ import (
 	pinotv1alpha1 "github.com/spaghettifunk/pinot-operator/api/v1alpha1"
 	"github.com/spaghettifunk/pinot-operator/pkg/resources"
 	"github.com/spaghettifunk/pinot-operator/pkg/util"
-
-	clusterv1alpha1 "github.com/spaghettifunk/pinot-operator/api/v1alpha1"
 )
 
 const finalizerID = "pinot-operator.finalizer.apache.io"
@@ -60,7 +59,10 @@ func Add(mgr manager.Manager) error {
 
 // newReconciler returns a new reconcile.Reconciler
 func newReconciler(mgr manager.Manager) reconcile.Reconciler {
-	return &PinotReconciler{Client: mgr.GetClient(), Scheme: mgr.GetScheme()}
+	return &PinotReconciler{
+		Client: mgr.GetClient(),
+		Scheme: mgr.GetScheme(),
+	}
 }
 
 // add adds a new Controller to mgr with r as the reconcile.Reconciler
@@ -238,6 +240,10 @@ func RemoveFinalizers(c client.Client) error {
 
 func (r *PinotReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
-		For(&clusterv1alpha1.Pinot{}).
+		For(&pinotv1alpha1.Pinot{}).
+		Owns(&appsv1.StatefulSet{}).
+		Owns(&corev1.Service{}).
+		Owns(&corev1.ConfigMap{}).
+		Owns(&corev1.Secret{}).
 		Complete(r)
 }
