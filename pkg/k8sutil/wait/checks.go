@@ -1,7 +1,7 @@
 package wait
 
 import (
-	"github.com/banzaicloud/istio-operator/pkg/util"
+	"github.com/spaghettifunk/pinot-operator/pkg/util"
 	appsv1 "k8s.io/api/apps/v1"
 	apiextensionsv1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
 	k8serrors "k8s.io/apimachinery/pkg/api/errors"
@@ -31,7 +31,6 @@ func CRDEstablishedConditionCheck(obj runtime.Object, k8serror error) bool {
 	if resource, ok = obj.(*apiextensionsv1.CustomResourceDefinition); !ok {
 		return true
 	}
-
 	for _, condition := range resource.Status.Conditions {
 		if condition.Type == apiextensionsv1.Established {
 			if condition.Status == apiextensionsv1.ConditionTrue {
@@ -39,7 +38,6 @@ func CRDEstablishedConditionCheck(obj runtime.Object, k8serror error) bool {
 			}
 		}
 	}
-
 	return false
 }
 

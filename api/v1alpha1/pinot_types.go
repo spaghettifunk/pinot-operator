@@ -17,15 +17,31 @@ limitations under the License.
 package v1alpha1
 
 import (
-	"encoding/json"
+	"strings"
 
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/types"
 )
 
 // OperatorVersion current operator version
 const OperatorVersion = "v0.0.1"
+
+const (
+	RevisionedAutoInjectionLabelKey = "pinot.io/rev"
+)
+
+func NamespacedNameFromRevision(revision string) types.NamespacedName {
+	nn := types.NamespacedName{}
+	p := strings.SplitN(revision, ".", 2)
+	if len(p) == 2 {
+		nn.Name = p[0]
+		nn.Namespace = p[1]
+	}
+
+	return nn
+}
 
 // CommonResourceConfiguration defines basic K8s resource spec configurations
 type CommonResourceConfiguration struct {
@@ -176,9 +192,6 @@ type PinotSpec struct {
 	// The desired state of the Zookeeper service to create for the cluster.
 	// +optional
 	Zookeeper ZookeeperConfiguration `json:"zookeeper,omitempty"`
-	// The desired state of the DeepStorage service to create for the cluster.
-	// +optional
-	DeepStorage DeepStorageConfiguration `json:"deepStorage,omitempty"`
 }
 
 // ControllerConfiguration defines the k8s spec configuration for the Pinot controller
@@ -266,12 +279,6 @@ type zookeeperStorage struct {
 	// See https://pkg.go.dev/k8s.io/apimachinery/pkg/api/resource#Quantity for more info on the format of this field.
 	// +kubebuilder:default:="5Gi"
 	Size string `json:"storage,omitempty"`
-}
-
-// DeepStorageConfiguration defines the desired state of the DeepStorege
-type DeepStorageConfiguration struct {
-	// +optional
-	Spec json.RawMessage `json:"spec"`
 }
 
 // PinotStatus defines the observed state of Pinot

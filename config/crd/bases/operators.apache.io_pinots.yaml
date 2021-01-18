@@ -2744,12 +2744,6 @@ spec:
                       type: object
                     type: array
                 type: object
-              deepStorage:
-                properties:
-                  spec:
-                    format: byte
-                    type: string
-                type: object
               image:
                 default: apachepinot/pinot:latest
                 type: string

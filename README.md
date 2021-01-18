@@ -17,6 +17,8 @@ The Pinot operator includes, but is not limited to, the following features:
 - **Simplified Deployment Configuration**: Configure the fundamentals of Brokers/Controller/Server like versions, persistence,
   retention policies, and replicas from a native Kubernetes resource.
 
+The operator has been largely inspired by the [BanzaiCloud istio-operator](https://github.com/banzaicloud/istio-operator) and the [RabbitMQ cluster-operator](https://github.com/rabbitmq/cluster-operator). They are great resources to learn how to create operators.
+
 ## Quickstart
 
 If you have a running Kubernetes cluster and `kubectl` configured to access it, run the following command to install the operator:
@@ -33,7 +35,11 @@ kubectl apply -f https://raw.githubusercontent.com/spaghettifunk/pinot-operator/
 
 [![asciicast](https://asciinema.org/a/385228.svg)](https://asciinema.org/a/385228)
 
-## Install kubebuilder
+## How to develop
+
+The operator is based on the `kubebuilder` project and it has being scaffolded with it.
+
+### Install kubebuilder
 
 If you are on `mac os x` you can install `kubebuilder` with `brew install kubebuilder`. Bare in mind that the `brew` command install only the binary of tool.
 To run the tests, you need some extra packages within your `$PATH`. For convenience, there is a file called `hack/install_kubebuilder_pkg.sh` that will pull the extra files and put it

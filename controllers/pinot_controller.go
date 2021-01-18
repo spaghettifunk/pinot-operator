@@ -27,13 +27,12 @@ import (
 	"github.com/goph/emperror"
 	"github.com/pkg/errors"
 
+	"github.com/spaghettifunk/pinot-operator/pkg/crds"
 	pinotbroker "github.com/spaghettifunk/pinot-operator/pkg/resources/broker"
 	pinotcontroller "github.com/spaghettifunk/pinot-operator/pkg/resources/controller"
 	pinotserver "github.com/spaghettifunk/pinot-operator/pkg/resources/server"
 	pinotzookeeper "github.com/spaghettifunk/pinot-operator/pkg/resources/zookeeper"
-	appsv1 "k8s.io/api/apps/v1"
-	corev1 "k8s.io/api/core/v1"
-	k8errors "k8s.io/apimachinery/pkg/api/errors"
+	k8serrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/tools/record"
@@ -61,8 +60,16 @@ func init() {
 // Add creates a new Pinot Controller and adds it to the Manager. The Manager will set fields on the Controller
 // and Start it when the Manager is Started.
 func Add(mgr manager.Manager) error {
-	r := newReconciler(mgr)
-	err := newController(mgr, r)
+	crd, err := crds.New(mgr, pinotv1alpha1.OperatorVersion)
+	if err != nil {
+		return emperror.Wrap(err, "unable to set up CRD reconciler")
+	}
+	err = crd.LoadCRDs()
+	if err != nil {
+		return emperror.Wrap(err, "unable to load CRDs from manifests")
+	}
+	r := newReconciler(mgr, crd)
+	err = newController(mgr, r)
 	if err != nil {
 		return emperror.Wrap(err, "failed to create controller")
 	}
@@ -70,11 +77,13 @@ func Add(mgr manager.Manager) error {
 }
 
 // newReconciler returns a new reconcile.Reconciler
-func newReconciler(mgr manager.Manager) reconcile.Reconciler {
+func newReconciler(mgr manager.Manager, crd *crds.CRDReconciler) reconcile.Reconciler {
 	return &ReconcilePinot{
-		Client:   mgr.GetClient(),
-		Scheme:   mgr.GetScheme(),
-		Recorder: mgr.GetEventRecorderFor("pinot-controller"),
+		Client:        mgr.GetClient(),
+		CRDReconciler: crd,
+		Manager:       mgr,
+		Scheme:        mgr.GetScheme(),
+		Recorder:      mgr.GetEventRecorderFor("pinot-controller"),
 	}
 }
 
@@ -104,13 +113,15 @@ type ReconcilePinot struct {
 	// that reads objects from the cache and writes to the apiserver
 	client.Client
 	Log              logr.Logger
+	CRDReconciler    *crds.CRDReconciler
+	Manager          manager.Manager
 	Scheme           *runtime.Scheme
 	Recorder         record.EventRecorder
 	Ctrl             controller.Controller
 	WatchersInitOnce sync.Once
 }
 
-type ReconcileComponent func(log logr.Logger, istio *pinotv1alpha1.Pinot) error
+type ReconcileComponent func(log logr.Logger, pinot *pinotv1alpha1.Pinot) error
 
 // the rbac rule requires an empty row at the end to render
 // +kubebuilder:rbac:groups=operators.apache.io,resources=pinots,verbs=get;list;watch;create;update
@@ -140,19 +151,6 @@ func (r *ReconcilePinot) Reconcile(request ctrl.Request) (ctrl.Result, error) {
 
 	logger.Info("Reconciling Pinot")
 
-	err = r.autoSetIstioRevisions(config)
-	if err != nil {
-		updateErr := updateStatus(r.Client, config, pinotv1alpha1.ReconcileFailed, err.Error(), logger)
-		if updateErr != nil {
-			logger.Error(updateErr, "failed to update state")
-			return reconcile.Result{}, errors.WithStack(err)
-		}
-		logger.Error(err, "")
-		return reconcile.Result{
-			RequeueAfter: time.Minute * 5,
-		}, nil
-	}
-
 	// Set default values where not set
 	pinotv1alpha1.SetDefaults(config)
 
@@ -169,7 +167,7 @@ func (r *ReconcilePinot) Reconcile(request ctrl.Request) (ctrl.Result, error) {
 }
 
 func (r *ReconcilePinot) setController(ctrl controller.Controller) {
-	r.ctrl = ctrl
+	r.Ctrl = ctrl
 }
 
 func (r *ReconcilePinot) reconcile(logger logr.Logger, config *pinotv1alpha1.Pinot) (reconcile.Result, error) {
@@ -194,8 +192,8 @@ func (r *ReconcilePinot) reconcile(logger logr.Logger, config *pinotv1alpha1.Pin
 	} else {
 		// Deletion timestamp set, config is marked for deletion
 		if util.ContainsString(config.ObjectMeta.Finalizers, finalizerID) {
-			if config.Status.Status == pinotv1alhpa1.Reconciling && config.Status.ErrorMessage == "" {
-				logger.Info("cannot remove Istio while reconciling")
+			if config.Status.Status == pinotv1alpha1.Reconciling && config.Status.ErrorMessage == "" {
+				logger.Info("cannot remove Pinot while reconciling")
 				return reconcile.Result{}, nil
 			}
 			config.ObjectMeta.Finalizers = util.RemoveString(config.ObjectMeta.Finalizers, finalizerID)
@@ -206,6 +204,30 @@ func (r *ReconcilePinot) reconcile(logger logr.Logger, config *pinotv1alpha1.Pin
 		logger.Info("Pinot removed")
 		return reconcile.Result{}, nil
 	}
+
+	err := updateStatus(r.Client, config, pinotv1alpha1.Reconciling, "", logger)
+	if err != nil {
+		return reconcile.Result{}, errors.WithStack(err)
+	}
+
+	// reconcile here
+	logger.Info("reconciling CRDs")
+	err = r.CRDReconciler.Reconcile(config, logger)
+	if err != nil {
+		logger.Error(err, "unable to reconcile CRDs")
+		return reconcile.Result{}, err
+	}
+
+	r.WatchersInitOnce.Do(func() {
+		nn := types.NamespacedName{
+			Namespace: config.Namespace,
+			Name:      config.Name,
+		}
+		err = r.watchCRDs(nn)
+		if err != nil {
+			logger.Error(err, "unable to watch CRDs")
+		}
+	})
 
 	// for each component do a reconciliation
 	reconcilers := []resources.ComponentReconciler{
@@ -221,7 +243,7 @@ func (r *ReconcilePinot) reconcile(logger logr.Logger, config *pinotv1alpha1.Pin
 		}
 	}
 
-	err := updateStatus(r.Client, config, pinotv1alpha1.Available, "", logger)
+	err = updateStatus(r.Client, config, pinotv1alpha1.Available, "", logger)
 	if err != nil {
 		return reconcile.Result{}, errors.WithStack(err)
 	}
@@ -238,12 +260,12 @@ func updateStatus(c client.Client, config *pinotv1alpha1.Pinot, status pinotv1al
 	config.Status.ErrorMessage = errorMessage
 
 	err := c.Status().Update(context.Background(), config)
-	if k8errors.IsNotFound(err) {
+	if k8serrors.IsNotFound(err) {
 		err = c.Update(context.Background(), config)
 	}
 
 	if err != nil {
-		if !k8errors.IsConflict(err) {
+		if !k8serrors.IsConflict(err) {
 			return emperror.Wrapf(err, "could not update Pinot state to '%s'", status)
 		}
 
@@ -261,7 +283,7 @@ func updateStatus(c client.Client, config *pinotv1alpha1.Pinot, status pinotv1al
 		actualConfig.Status.ErrorMessage = errorMessage
 
 		err = c.Status().Update(context.Background(), &actualConfig)
-		if k8errors.IsNotFound(err) {
+		if k8serrors.IsNotFound(err) {
 			err = c.Update(context.Background(), &actualConfig)
 		}
 		if err != nil {
@@ -294,9 +316,5 @@ func RemoveFinalizers(c client.Client) error {
 func (r *ReconcilePinot) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&pinotv1alpha1.Pinot{}).
-		Owns(&appsv1.StatefulSet{}).
-		Owns(&corev1.Service{}).
-		Owns(&corev1.ConfigMap{}).
-		Owns(&corev1.Secret{}).
 		Complete(r)
 }

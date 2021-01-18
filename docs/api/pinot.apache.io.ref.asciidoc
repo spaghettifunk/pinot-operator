@@ -98,23 +98,6 @@ ControllerConfiguration defines the k8s spec configuration for the Pinot control
 |===
 
 
-[id="{anchor_prefix}-github-com-spaghettifunk-pinot-operator-api-v1alpha1-deepstorageconfiguration"]
-==== DeepStorageConfiguration 
-
-DeepStorageConfiguration defines the desired state of the DeepStorege
-
-.Appears In:
-****
-- xref:{anchor_prefix}-github-com-spaghettifunk-pinot-operator-api-v1alpha1-pinotspec[$$PinotSpec$$]
-****
-
-[cols="25a,75a", options="header"]
-|===
-| Field | Description
-| *`spec`* __integer array__ | 
-|===
-
-
 [id="{anchor_prefix}-github-com-spaghettifunk-pinot-operator-api-v1alpha1-externalserviceresourceconfiguration"]
 ==== ExternalServiceResourceConfiguration 
 
@@ -201,7 +184,6 @@ PinotSpec defines the desired state of Pinot
 | *`broker`* __xref:{anchor_prefix}-github-com-spaghettifunk-pinot-operator-api-v1alpha1-brokerconfiguration[$$BrokerConfiguration$$]__ | The desired state of the Broker service to create for the cluster.
 | *`server`* __xref:{anchor_prefix}-github-com-spaghettifunk-pinot-operator-api-v1alpha1-serverconfiguration[$$ServerConfiguration$$]__ | The desired state of the Server service to create for the cluster.
 | *`zookeeper`* __xref:{anchor_prefix}-github-com-spaghettifunk-pinot-operator-api-v1alpha1-zookeeperconfiguration[$$ZookeeperConfiguration$$]__ | The desired state of the Zookeeper service to create for the cluster.
-| *`deepStorage`* __xref:{anchor_prefix}-github-com-spaghettifunk-pinot-operator-api-v1alpha1-deepstorageconfiguration[$$DeepStorageConfiguration$$]__ | The desired state of the DeepStorage service to create for the cluster.
 |===
 
 
