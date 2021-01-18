@@ -31,9 +31,7 @@ Then you can deploy a Pinot cluster:
 kubectl apply -f https://raw.githubusercontent.com/spaghettifunk/pinot-operator/main/docs/examples/hello-world/pinot.yaml
 ```
 
-<p align="center">
-  <img width="100%" src="./docs/demos/installation.svg">
-</p>
+[![asciicast](https://asciinema.org/a/385228.svg)](https://asciinema.org/a/385228)
 
 ## Install kubebuilder
 
