@@ -1,6 +1,7 @@
 # Apache Pinot Kuberentes Operator
 
 [![Go Report Card](https://goreportcard.com/badge/github.com/spaghettifunk/pinot-operator)](https://goreportcard.com/report/github.com/spaghettifunk/pinot-operator)
+[![license](https://img.shields.io/github/license/apache/pinot.svg)](LICENSE)
 
 **Project status: _alpha_** Not all planned features are completed. The API, spec, status and other user facing objects may change, and not in a backward compatible way.
 
