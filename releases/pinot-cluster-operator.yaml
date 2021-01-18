@@ -4117,8 +4117,9 @@ spec:
                   jvmOptions:
                     default: -Xmx2G -Xms2G
                     type: string
-                  replicas:
+                  replicaCount:
                     default: 1
+                    format: int32
                     minimum: 0
                     type: integer
                   resources:
@@ -4149,7 +4150,7 @@ spec:
                     type: object
                   storage:
                     properties:
-                      size:
+                      storage:
                         default: 5Gi
                         type: string
                     type: object
@@ -4350,7 +4351,7 @@ spec:
         - --enable-leader-election
         command:
         - /manager
-        image: davideberdin/pinot-operator:v0.0.6
+        image: davideberdin/pinot-operator:v0.0.1
         name: manager
         resources:
           limits:

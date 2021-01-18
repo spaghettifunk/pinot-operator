@@ -22,7 +22,7 @@ The Pinot operator includes, but is not limited to, the following features:
 If you have a running Kubernetes cluster and `kubectl` configured to access it, run the following command to install the operator:
 
 ```bash
-kubectl apply -f https://github.com/spaghettifunk/pinot-operator/releases/latest/download/pinot-cluster-operator.yml
+kubectl apply -f https://github.com/spaghettifunk/pinot-operator/releases/latest/download/pinot-cluster-operator.yaml
 ```
 
 Then you can deploy a Pinot cluster:
