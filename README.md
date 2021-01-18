@@ -78,3 +78,17 @@ Failure [0.007 seconds]
 ```
 
 you need to run the script called `hack/install_kubebuilder_pkg.sh`.
+
+## Versioning
+
+Apache Pinot Kubernetes Operator follows non-strict [semver](https://semver.org/).
+
+[The versioning guidelines document](version_guidelines.md) contains guidelines
+on how we implement non-strict semver. The version number MAY or MAY NOT follow the semver rules. Hence, we highly recommend to read
+the release notes to understand the changes and their potential impact for any release.
+
+## Contributing
+
+This project follows the typical GitHub pull request model. Before starting any work, please either comment on an [existing issue](https://github.com/spaghettifunk/pinot-operator/issues), or file a new one.
+
+Please read [contribution guidelines](CONTRIBUTING.md) if you are interested in contributing to this project.
