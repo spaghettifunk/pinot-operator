@@ -2751,12 +2751,6 @@ spec:
                       type: object
                     type: array
                 type: object
-              deepStorage:
-                properties:
-                  spec:
-                    format: byte
-                    type: string
-                type: object
               image:
                 default: apachepinot/pinot:latest
                 type: string
@@ -4154,8 +4148,6 @@ spec:
                         default: 5Gi
                         type: string
                     type: object
-                required:
-                - image
                 type: object
             required:
             - clusterName
