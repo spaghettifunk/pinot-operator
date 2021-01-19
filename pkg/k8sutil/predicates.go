@@ -143,3 +143,27 @@ func GetWatchPredicateForOwnedResources(owner runtime.Object, isController bool,
 		},
 	}
 }
+
+func GetWatchPredicateForTenant() predicate.Funcs {
+	return predicate.Funcs{
+		CreateFunc: func(e event.CreateEvent) bool {
+			return true
+		},
+		DeleteFunc: func(e event.DeleteEvent) bool {
+			return true
+		},
+		UpdateFunc: func(e event.UpdateEvent) bool {
+			if _, ok := e.ObjectOld.(*pinotv1alpha1.Tenant); !ok {
+				return false
+			}
+			old := e.ObjectOld.(*pinotv1alpha1.Tenant)
+			new := e.ObjectNew.(*pinotv1alpha1.Tenant)
+			if !reflect.DeepEqual(old.Spec, new.Spec) ||
+				old.GetDeletionTimestamp() != new.GetDeletionTimestamp() ||
+				old.GetGeneration() != new.GetGeneration() {
+				return true
+			}
+			return false
+		},
+	}
+}

@@ -16,6 +16,8 @@ Package v1alpha1 contains API Schema definitions for the operators v1alpha1 API 
 .Resource Types
 - xref:{anchor_prefix}-github-com-spaghettifunk-pinot-operator-api-v1alpha1-pinot[$$Pinot$$]
 - xref:{anchor_prefix}-github-com-spaghettifunk-pinot-operator-api-v1alpha1-pinotlist[$$PinotList$$]
+- xref:{anchor_prefix}-github-com-spaghettifunk-pinot-operator-api-v1alpha1-tenant[$$Tenant$$]
+- xref:{anchor_prefix}-github-com-spaghettifunk-pinot-operator-api-v1alpha1-tenantlist[$$TenantList$$]
 
 
 === Definitions
@@ -246,6 +248,67 @@ ServiceResourceConfiguration defines some definition for a service resource
 | *`port`* __integer__ | 
 | *`nodePort`* __integer__ | 
 |===
+
+
+[id="{anchor_prefix}-github-com-spaghettifunk-pinot-operator-api-v1alpha1-tenant"]
+==== Tenant 
+
+Tenant is the Schema for the Tenants API
+
+.Appears In:
+****
+- xref:{anchor_prefix}-github-com-spaghettifunk-pinot-operator-api-v1alpha1-tenantlist[$$TenantList$$]
+****
+
+[cols="25a,75a", options="header"]
+|===
+| Field | Description
+| *`apiVersion`* __string__ | `operators.apache.io/v1alpha1`
+| *`kind`* __string__ | `Tenant`
+| *`TypeMeta`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.20/#typemeta-v1-meta[$$TypeMeta$$]__ | 
+| *`metadata`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.20/#objectmeta-v1-meta[$$ObjectMeta$$]__ | Refer to Kubernetes API documentation for fields of `metadata`.
+
+| *`spec`* __xref:{anchor_prefix}-github-com-spaghettifunk-pinot-operator-api-v1alpha1-tenantspec[$$TenantSpec$$]__ | 
+| *`status`* __xref:{anchor_prefix}-github-com-spaghettifunk-pinot-operator-api-v1alpha1-tenantstatus[$$TenantStatus$$]__ | 
+|===
+
+
+[id="{anchor_prefix}-github-com-spaghettifunk-pinot-operator-api-v1alpha1-tenantlist"]
+==== TenantList 
+
+TenantList contains a list of Tenant
+
+
+
+[cols="25a,75a", options="header"]
+|===
+| Field | Description
+| *`apiVersion`* __string__ | `operators.apache.io/v1alpha1`
+| *`kind`* __string__ | `TenantList`
+| *`TypeMeta`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.20/#typemeta-v1-meta[$$TypeMeta$$]__ | 
+| *`metadata`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.20/#listmeta-v1-meta[$$ListMeta$$]__ | Refer to Kubernetes API documentation for fields of `metadata`.
+
+| *`items`* __xref:{anchor_prefix}-github-com-spaghettifunk-pinot-operator-api-v1alpha1-tenant[$$Tenant$$]__ | 
+|===
+
+
+[id="{anchor_prefix}-github-com-spaghettifunk-pinot-operator-api-v1alpha1-tenantspec"]
+==== TenantSpec 
+
+TenantSpec defines the desired state of Tenant
+
+.Appears In:
+****
+- xref:{anchor_prefix}-github-com-spaghettifunk-pinot-operator-api-v1alpha1-tenant[$$Tenant$$]
+****
+
+[cols="25a,75a", options="header"]
+|===
+| Field | Description
+| *`foo`* __string__ | Foo is an example field of Tenant. Edit Tenant_types.go to remove/update
+|===
+
+
 
 
 [id="{anchor_prefix}-github-com-spaghettifunk-pinot-operator-api-v1alpha1-zookeeperconfiguration"]

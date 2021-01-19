@@ -47,6 +47,26 @@ rules:
 - apiGroups:
   - operators.apache.io
   resources:
+  - Tenants
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - operators.apache.io
+  resources:
+  - Tenants/status
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - operators.apache.io
+  resources:
   - pinots
   verbs:
   - create

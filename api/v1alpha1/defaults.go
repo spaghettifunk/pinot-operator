@@ -2,8 +2,8 @@ package v1alpha1
 
 import "github.com/spaghettifunk/pinot-operator/pkg/util"
 
-// SetDefaults sets some of the specs of the various components
-func SetDefaults(config *Pinot) {
+// SetPinotDefaults sets some of the specs of the various components
+func SetPinotDefaults(config *Pinot) {
 	// controller
 	if config.Spec.Controller.Service.Port == 0 {
 		config.Spec.Controller.Service.Port = 9000
@@ -29,10 +29,16 @@ func SetDefaults(config *Pinot) {
 		config.Spec.Server.DiskSize = "4Gi"
 	}
 	// zookeeper
+	// TODO: for some reason the kubebuilder:default doesn't work with this
 	if config.Spec.Zookeeper.Image == nil {
 		config.Spec.Zookeeper.Image = util.StrPointer("zookeeper:3.5.5")
 	}
 	if config.Spec.Zookeeper.Storage.Size == "" {
 		config.Spec.Zookeeper.Storage.Size = "5Gi"
 	}
+}
+
+// SetTenantDefaults sets some of the specs when not defined by the user
+func SetTenantDefaults(config *Tenant) {
+
 }

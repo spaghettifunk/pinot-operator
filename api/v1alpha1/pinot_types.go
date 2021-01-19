@@ -17,6 +17,7 @@ limitations under the License.
 package v1alpha1
 
 import (
+	"fmt"
 	"strings"
 
 	appsv1 "k8s.io/api/apps/v1"
@@ -325,4 +326,40 @@ type PinotList struct {
 
 func init() {
 	SchemeBuilder.Register(&Pinot{}, &PinotList{})
+}
+
+type SortablePinotItems []Pinot
+
+func (list SortablePinotItems) Len() int {
+	return len(list)
+}
+
+func (list SortablePinotItems) Swap(i, j int) {
+	list[i], list[j] = list[j], list[i]
+}
+
+func (list SortablePinotItems) Less(i, j int) bool {
+	return list[i].CreationTimestamp.Time.Before(list[j].CreationTimestamp.Time)
+}
+
+func (p *Pinot) RevisionLabels() map[string]string {
+	return map[string]string{
+		RevisionedAutoInjectionLabelKey: p.NamespacedRevision(),
+	}
+}
+
+func (p *Pinot) NamespacedRevision() string {
+	return NamespacedRevision(p.Revision(), p.Namespace)
+}
+
+func NamespacedRevision(revision, namespace string) string {
+	return fmt.Sprintf("%s.%s", revision, namespace)
+}
+
+func (p *Pinot) Revision() string {
+	return strings.Replace(p.Name, ".", "-", -1)
+}
+
+func (p *Pinot) WithRevision(s string) string {
+	return strings.Join([]string{s, p.Revision()}, "-")
 }

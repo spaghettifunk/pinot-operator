@@ -5,6 +5,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 
+	"github.com/spaghettifunk/pinot-operator/api/v1alpha1"
 	"github.com/spaghettifunk/pinot-operator/pkg/util"
 )
 
@@ -59,6 +60,10 @@ func ObjectMetaWithAnnotations(name string, labels map[string]string, annotation
 	o := ObjectMeta(name, labels, config)
 	o.Annotations = annotations
 	return o
+}
+
+func ObjectMetaWithRevision(name string, labels map[string]string, config *v1alpha1.Pinot) metav1.ObjectMeta {
+	return ObjectMeta(config.WithRevision(name), util.MergeStringMaps(labels, config.RevisionLabels()), config)
 }
 
 // ObjectMetaClusterScope .

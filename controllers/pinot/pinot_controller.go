@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package controllers
+package pinot
 
 import (
 	"context"
@@ -74,6 +74,12 @@ func Add(mgr manager.Manager) error {
 		return emperror.Wrap(err, "failed to create controller")
 	}
 	return nil
+}
+
+type PinotReconciler interface {
+	reconcile.Reconciler
+	initWatches(watchCreatedResourcesEvents bool) error
+	setController(ctrl controller.Controller)
 }
 
 // newReconciler returns a new reconcile.Reconciler
@@ -152,7 +158,7 @@ func (r *ReconcilePinot) Reconcile(request ctrl.Request) (ctrl.Result, error) {
 	logger.Info("Reconciling Pinot")
 
 	// Set default values where not set
-	pinotv1alpha1.SetDefaults(config)
+	pinotv1alpha1.SetPinotDefaults(config)
 
 	result, err := r.reconcile(logger, config)
 	if err != nil {
