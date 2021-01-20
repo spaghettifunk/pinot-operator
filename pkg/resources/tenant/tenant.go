@@ -2,7 +2,9 @@ package tenant
 
 import (
 	"github.com/go-logr/logr"
+	"github.com/go-openapi/strfmt"
 	"github.com/goph/emperror"
+	pinotsdk "github.com/spaghettifunk/pinot-go-client/client"
 	"github.com/spaghettifunk/pinot-operator/pkg/k8sutil"
 	"github.com/spaghettifunk/pinot-operator/pkg/resources"
 	"github.com/spaghettifunk/pinot-operator/pkg/resources/templates"
@@ -25,15 +27,18 @@ var (
 
 type Reconciler struct {
 	resources.Reconciler
+	PinotClient *pinotsdk.PinotSdk
 }
 
 // New .
 func New(client client.Client, config *pinotv1alpha1.Pinot) *Reconciler {
+	pc := pinotsdk.NewHTTPClient(strfmt.Default)
 	return &Reconciler{
 		Reconciler: resources.Reconciler{
 			Client: client,
 			Config: config,
 		},
+		PinotClient: pc,
 	}
 }
 
@@ -58,23 +63,9 @@ func (r *Reconciler) Reconcile(log logr.Logger) error {
 	}
 	pinotv1alpha1.SetTenantDefaults(object)
 
-	err := k8sutil.Reconcile(log, r.Client, object, desiredState)
-	if err != nil {
+	if err := Reconcile(r.PinotClient, r.Client, object, desiredState); err != nil {
 		return emperror.WrapWith(err, "failed to reconcile resource", "resource", object.GetObjectKind().GroupVersionKind())
 	}
-
-	// selector := resourceLabels
-
-	// var drs = []resources.DynamicResourceWithDesiredState{
-	// 	{DynamicResource: func() *k8sutil.DynamicObject { return r.meshExpansionGateway(selector) }, DesiredState: meshExpansionDesiredState},
-	// }
-	// for _, dr := range drs {
-	// 	o := dr.DynamicResource()
-	// 	err := o.Reconcile(log, r.dynamic, dr.DesiredState)
-	// 	if err != nil {
-	// 		return emperror.WrapWith(err, "failed to reconcile dynamic resource", "resource", o.Gvr)
-	// 	}
-	// }
 
 	log.Info("Reconciled")
 

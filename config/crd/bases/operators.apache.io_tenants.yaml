@@ -28,10 +28,24 @@ spec:
             type: object
           spec:
             properties:
-              foo:
-                type: string
+              labels:
+                additionalProperties:
+                  type: string
+                type: object
+              pinotServer:
+                properties:
+                  name:
+                    type: string
+                  namespace:
+                    type: string
+                type: object
             type: object
           status:
+            properties:
+              ErrorMessage:
+                type: string
+              Status:
+                type: string
             type: object
         type: object
     served: true

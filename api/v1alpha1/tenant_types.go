@@ -22,14 +22,16 @@ import (
 
 // TenantSpec defines the desired state of Tenant
 type TenantSpec struct {
-	PinotServer *NamespacedName
-	Labels      map[string]string
+	// +optional
+	PinotServer *NamespacedName `json:"pinotServer"`
+	// +optional
+	Labels map[string]string `json:"labels"`
 }
 
 // TenantStatus defines the observed state of Tenant
 type TenantStatus struct {
-	Status       ConfigState
-	ErrorMessage string
+	Status       ConfigState `json:"Status,omitempty"`
+	ErrorMessage string      `json:"ErrorMessage,omitempty"`
 }
 
 // NamespacedName contains reference to a resource

@@ -67,7 +67,7 @@ vet:
 # Generate code
 generate: api-reference
 	go generate ./pkg/...
-	$(CONTROLLER_GEN) object:headerFile="hack/boilerplate.go.txt" paths="./..."
+	$(CONTROLLER_GEN) object:headerFile="hack/boilerplate.go.txt" paths="./...;./pkg/..."
 
 # Build the docker image
 docker-build: test
