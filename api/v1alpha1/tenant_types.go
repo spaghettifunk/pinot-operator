@@ -22,6 +22,8 @@ import (
 
 // TenantSpec defines the desired state of Tenant
 type TenantSpec struct {
+	// +kubebuilder:validation:Enum=broker,server
+	Type string `json:"type"`
 	// +optional
 	PinotServer *NamespacedName `json:"pinotServer"`
 	// +optional
