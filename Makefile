@@ -136,7 +136,7 @@ api-reference: install-tools ## Generate API reference documentation
 		--source-path ./api/v1alpha1 \
 		--config ./docs/api/autogen/config.yaml \
 		--templates-dir ./docs/api/autogen/templates \
-		--output-path ./docs/api/pinot.apache.io.ref.asciidoc \
+		--output-path ./docs/index.asciidoc \
 		--max-depth 30
 
 # Builds a single-file installation manifest to deploy the Operator

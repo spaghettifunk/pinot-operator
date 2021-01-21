@@ -24,6 +24,6 @@ jobs:
           cd wiki
           git config --local user.email "github-actions@github.com"
           git config --local user.name "github-actions"
-          cp ../pinot-operator/docs/api/pinot.apache.io.ref.asciidoc ./api_reference.asciidoc
+          cp ../pinot-operator/docs/index.asciidoc ./api_reference.asciidoc
           git add .
           git diff-index --quiet HEAD || git commit -m "Update API Reference" && git push
