@@ -20,14 +20,32 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
+// Role is the type of Tenant for the Apache Pinot cluster
+// +kubebuilder:validation:Enum=broker;server
+type Role string
+
 // TenantSpec defines the desired state of Tenant
 type TenantSpec struct {
-	// +kubebuilder:validation:Enum=broker,server
-	Type string `json:"type"`
+	// The tenant role to be used
+	Role Role `json:"role"`
+	// Name of the tenant
+	Name string `json:"name"`
+	// Number of instances to be associated with the tenant. It is used only
+	// when creating a tenant with Role Broker
+	// +optional
+	NumberOfInstances *int32 `json:"numberOfInstances,omitempty"`
+	// Number of Offline instances to be associted with the tenant. It is used only
+	// when creating a tenant with Role Server
+	// +optional
+	OfflineInstances *int32 `json:"offlineInstances,omitempty"`
+	// Number of Realtime instances to be associted with the tenant. It is used only
+	// when creating a tenant with Role Server
+	// +optional
+	RealtimeInstances *int32 `json:"realtimeInstances,omitempty"`
 	// +optional
 	PinotServer *NamespacedName `json:"pinotServer"`
 	// +optional
-	Labels map[string]string `json:"labels"`
+	Labels map[string]string `json:"labels,omitempty"`
 }
 
 // TenantStatus defines the observed state of Tenant
@@ -45,6 +63,8 @@ type NamespacedName struct {
 // +kubebuilder:object:root=true
 
 // Tenant is the Schema for the Tenants API
+// +kubebuilder:printcolumn:name="Role",type=string,JSONPath=`.spec.role`
+// +kubebuilder:subresource:status
 type Tenant struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`

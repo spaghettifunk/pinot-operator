@@ -6,12 +6,12 @@ require (
 	emperror.dev/errors v0.8.0
 	github.com/Masterminds/semver/v3 v3.1.0
 	github.com/banzaicloud/k8s-objectmatcher v1.4.0
+	github.com/davecgh/go-spew v1.1.1
 	github.com/elastic/crd-ref-docs v0.0.6
 	github.com/go-logr/logr v0.1.0
 	github.com/go-openapi/strfmt v0.20.0
 	github.com/gofrs/uuid v3.2.0+incompatible
 	github.com/goph/emperror v0.17.2
-	github.com/hashicorp/go-retryablehttp v0.6.8
 	github.com/hoisie/mustache v0.0.0-20160804235033-6375acf62c69
 	github.com/onsi/ginkgo v1.12.1
 	github.com/onsi/gomega v1.10.1

@@ -25,6 +25,7 @@ import (
 	"github.com/goph/emperror"
 	"github.com/pkg/errors"
 	"github.com/spaghettifunk/pinot-operator/pkg/k8sutil"
+	"github.com/spaghettifunk/pinot-operator/pkg/resources/tenant"
 	"github.com/spaghettifunk/pinot-operator/pkg/util"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -122,6 +123,20 @@ func (r *ReconcilerTenant) Reconcile(request ctrl.Request) (ctrl.Result, error) 
 
 	t.Spec.Labels = util.MergeStringMaps(t.Spec.Labels, pinot.RevisionLabels())
 
+	if err := updateStatus(r.Client, t, operatorsv1alpha1.Reconciling, "", logger); err != nil {
+		return reconcile.Result{}, errors.WithStack(err)
+	}
+
+	reconciler := tenant.New(r.Client, pinot)
+	if err := reconciler.Reconcile(log); err != nil {
+		logger.Error(err, "failed to reconcile tenant")
+		return reconcile.Result{}, errors.WithStack(err)
+	}
+
+	if err = updateStatus(r.Client, t, operatorsv1alpha1.Available, "", logger); err != nil {
+		return reconcile.Result{}, errors.WithStack(err)
+	}
+
 	return ctrl.Result{}, nil
 }
 
@@ -166,6 +181,7 @@ func updateStatus(c client.Client, instance *operatorsv1alpha1.Tenant, status op
 	typeMeta := instance.TypeMeta
 	instance.Status.Status = status
 	instance.Status.ErrorMessage = errorMessage
+
 	err := c.Status().Update(context.Background(), instance)
 	if k8serrors.IsNotFound(err) {
 		err = c.Update(context.Background(), instance)
@@ -196,5 +212,6 @@ func updateStatus(c client.Client, instance *operatorsv1alpha1.Tenant, status op
 	// update loses the typeMeta of the instace that's used later when setting ownerrefs
 	instance.TypeMeta = typeMeta
 	logger.Info("tenant state updated", "status", status)
+
 	return nil
 }

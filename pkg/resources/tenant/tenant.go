@@ -1,6 +1,8 @@
 package tenant
 
 import (
+	"fmt"
+
 	"github.com/go-logr/logr"
 	"github.com/go-openapi/strfmt"
 	"github.com/goph/emperror"
@@ -32,7 +34,11 @@ type Reconciler struct {
 
 // New .
 func New(client client.Client, config *pinotv1alpha1.Pinot) *Reconciler {
-	pc := pinotsdk.NewHTTPClient(strfmt.Default)
+	pc := pinotsdk.NewHTTPClientWithConfig(strfmt.Default, &pinotsdk.TransportConfig{
+		Host:     fmt.Sprintf("%s:%d", "localhost", config.Spec.Controller.Service.Port),
+		BasePath: pinotsdk.DefaultBasePath,
+		Schemes:  []string{"http"},
+	})
 	return &Reconciler{
 		Reconciler: resources.Reconciler{
 			Client: client,

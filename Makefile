@@ -65,9 +65,10 @@ vet:
 	go vet ./...
 
 # Generate code
-generate: api-reference
+generate: api-reference download-deps
 	go generate ./pkg/...
 	$(CONTROLLER_GEN) object:headerFile="hack/boilerplate.go.txt" paths="./...;./pkg/..."
+	./hack/update_codegen.sh	
 
 # Build the docker image
 docker-build: test
@@ -143,3 +144,6 @@ api-reference: install-tools ## Generate API reference documentation
 generate-installation-manifest:
 	mkdir -p releases
 	kustomize build config/installation/ > releases/pinot-cluster-operator.yaml
+
+download-deps:
+	./scripts/download-deps.sh

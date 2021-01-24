@@ -16,7 +16,11 @@ spec:
     singular: tenant
   scope: Namespaced
   versions:
-  - name: v1alpha1
+  - additionalPrinterColumns:
+    - jsonPath: .spec.role
+      name: Role
+      type: string
+    name: v1alpha1
     schema:
       openAPIV3Schema:
         properties:
@@ -32,6 +36,14 @@ spec:
                 additionalProperties:
                   type: string
                 type: object
+              name:
+                type: string
+              numberOfInstances:
+                format: int32
+                type: integer
+              offlineInstances:
+                format: int32
+                type: integer
               pinotServer:
                 properties:
                   name:
@@ -39,6 +51,17 @@ spec:
                   namespace:
                     type: string
                 type: object
+              realtimeInstances:
+                format: int32
+                type: integer
+              role:
+                enum:
+                - broker
+                - server
+                type: string
+            required:
+            - name
+            - role
             type: object
           status:
             properties:
@@ -50,6 +73,8 @@ spec:
         type: object
     served: true
     storage: true
+    subresources:
+      status: {}
 status:
   acceptedNames:
     kind: ""

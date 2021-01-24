@@ -346,6 +346,11 @@ TenantSpec defines the desired state of Tenant
 [cols="25a,75a", options="header"]
 |===
 | Field | Description
+| *`role`* __Role__ | The tenant role to be used
+| *`name`* __string__ | Name of the tenant
+| *`numberOfInstances`* __integer__ | Number of instances to be associated with the tenant. It is used only when creating a tenant with Role Broker
+| *`offlineInstances`* __integer__ | Number of Offline instances to be associted with the tenant. It is used only when creating a tenant with Role Server
+| *`realtimeInstances`* __integer__ | Number of Realtime instances to be associted with the tenant. It is used only when creating a tenant with Role Server
 | *`pinotServer`* __xref:{anchor_prefix}-github-com-spaghettifunk-pinot-operator-api-v1alpha1-namespacedname[$$NamespacedName$$]__ | 
 | *`labels`* __object (keys:string, values:string)__ | 
 |===

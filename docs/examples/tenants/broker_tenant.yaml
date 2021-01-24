@@ -1,0 +1,9 @@
+apiVersion: operators.apache.io/v1alpha1
+kind: Tenant
+metadata:
+  name: broer-tenant-sample
+  namespace: pinot-system
+spec:
+  role: broker
+  name: BrokerTenantTest
+  numberOfInstances: 1
