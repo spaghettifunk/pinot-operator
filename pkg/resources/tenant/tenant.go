@@ -12,7 +12,7 @@ import (
 	"github.com/spaghettifunk/pinot-operator/pkg/resources/templates"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
-	pinotv1alpha1 "github.com/spaghettifunk/pinot-operator/api/v1alpha1"
+	pinotv1alpha1 "github.com/spaghettifunk/pinot-operator/api/pinot/v1alpha1"
 )
 
 const (

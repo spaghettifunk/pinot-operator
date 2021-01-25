@@ -35,7 +35,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 
 	"github.com/spaghettifunk/pinot-operator/api"
-	operatorsv1alpha1 "github.com/spaghettifunk/pinot-operator/api/v1alpha1"
+	operatorsv1alpha1 "github.com/spaghettifunk/pinot-operator/api/pinot/v1alpha1"
 	"github.com/spaghettifunk/pinot-operator/controllers/pinot"
 	"github.com/spaghettifunk/pinot-operator/controllers/tenant"
 	"github.com/spaghettifunk/pinot-operator/pkg/k8sutil"

@@ -43,7 +43,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 
-	pinotv1alpha1 "github.com/spaghettifunk/pinot-operator/api/v1alpha1"
+	pinotv1alpha1 "github.com/spaghettifunk/pinot-operator/api/pinot/v1alpha1"
 	"github.com/spaghettifunk/pinot-operator/pkg/resources"
 	"github.com/spaghettifunk/pinot-operator/pkg/util"
 )

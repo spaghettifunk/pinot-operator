@@ -4,7 +4,7 @@ import (
 	"github.com/go-logr/logr"
 	"k8s.io/apimachinery/pkg/runtime"
 
-	pinotv1alpha1 "github.com/spaghettifunk/pinot-operator/api/v1alpha1"
+	pinotv1alpha1 "github.com/spaghettifunk/pinot-operator/api/pinot/v1alpha1"
 	"github.com/spaghettifunk/pinot-operator/pkg/k8sutil"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )

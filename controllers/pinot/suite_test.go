@@ -30,7 +30,7 @@ import (
 	logf "sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 
-	operatorsv1alpha1 "github.com/spaghettifunk/pinot-operator/api/v1alpha1"
+	operatorsv1alpha1 "github.com/spaghettifunk/pinot-operator/api/pinot/v1alpha1"
 	// +kubebuilder:scaffold:imports
 )
 

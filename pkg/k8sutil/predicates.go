@@ -25,7 +25,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/predicate"
 
 	"github.com/go-logr/logr"
-	pinotv1alpha1 "github.com/spaghettifunk/pinot-operator/api/v1alpha1"
+	pinotv1alpha1 "github.com/spaghettifunk/pinot-operator/api/pinot/v1alpha1"
 )
 
 func GetWatchPredicateForPinot() predicate.Funcs {

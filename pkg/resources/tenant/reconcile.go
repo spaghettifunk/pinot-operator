@@ -5,7 +5,7 @@ import (
 
 	"github.com/davecgh/go-spew/spew"
 	pinotsdk "github.com/spaghettifunk/pinot-go-client/client"
-	pinotv1alpha1 "github.com/spaghettifunk/pinot-operator/api/v1alpha1"
+	pinotv1alpha1 "github.com/spaghettifunk/pinot-operator/api/pinot/v1alpha1"
 	"github.com/spaghettifunk/pinot-operator/pkg/k8sutil"
 	runtimeClient "sigs.k8s.io/controller-runtime/pkg/client"
 )

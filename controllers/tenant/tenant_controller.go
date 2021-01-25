@@ -41,7 +41,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 	"sigs.k8s.io/controller-runtime/pkg/source"
 
-	operatorsv1alpha1 "github.com/spaghettifunk/pinot-operator/api/v1alpha1"
+	operatorsv1alpha1 "github.com/spaghettifunk/pinot-operator/api/pinot/v1alpha1"
 	logf "sigs.k8s.io/controller-runtime/pkg/runtime/log"
 )
 
