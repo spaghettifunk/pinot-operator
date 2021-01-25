@@ -4,4 +4,7 @@ resources:
 - group: operators
   kind: Pinot
   version: v1alpha1
+- group: operators
+  kind: Tenant
+  version: v1alpha1
 version: "2"

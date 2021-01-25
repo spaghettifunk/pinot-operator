@@ -53,8 +53,8 @@ deploy: manifests
 	kustomize build config/default | kubectl apply -f -
 
 # Generate manifests e.g. CRD, RBAC etc.
-manifests:
-	$(CONTROLLER_GEN) $(CRD_OPTIONS) rbac:roleName=operator-role paths="./api/...;./controllers/..." output:crd:artifacts:config=config/crd/bases	
+manifests: download-deps
+	bin/controller-gen $(CRD_OPTIONS) rbac:roleName=operator-role paths="./api/...;./controllers/..." output:crd:artifacts:config=config/crd/bases	
 
 # Run go fmt against code
 fmt:
@@ -65,8 +65,10 @@ vet:
 	go vet ./...
 
 # Generate code
-generate: api-reference
-	$(CONTROLLER_GEN) object:headerFile="hack/boilerplate.go.txt" paths="./...;./pkg/..."
+generate: download-deps api-reference
+	go generate ./pkg/...
+	bin/controller-gen object:headerFile="hack/boilerplate.go.txt" paths="./..."
+	# ./hack/update-codegen.sh	
 
 # Build the docker image
 docker-build: test
@@ -108,22 +110,9 @@ ifndef DOCKER_REGISTRY_SERVER
 	$(error DOCKER_REGISTRY_SERVER is undefined: URL of docker registry containing the Operator image (e.g. registry.my-company.com))
 endif
 
-# find or download controller-gen
-# download controller-gen if necessary
-controller-gen:
-ifeq (, $(shell which controller-gen))
-	@{ \
-	set -e ;\
-	CONTROLLER_GEN_TMP_DIR=$$(mktemp -d) ;\
-	cd $$CONTROLLER_GEN_TMP_DIR ;\
-	go mod init tmp ;\
-	go get sigs.k8s.io/controller-tools/cmd/controller-gen@v0.2.5 ;\
-	rm -rf $$CONTROLLER_GEN_TMP_DIR ;\
-	}
-CONTROLLER_GEN=$(GOBIN)/controller-gen
-else
-CONTROLLER_GEN=$(shell which controller-gen)
-endif
+# Verify codegen
+verify-codegen: download-deps
+	./hack/verify-codegen.sh
 
 install-tools:
 	go mod download
@@ -132,7 +121,7 @@ install-tools:
 # documentation
 api-reference: install-tools ## Generate API reference documentation
 	crd-ref-docs \
-		--source-path ./api/v1alpha1 \
+		--source-path ./api/pinot/v1alpha1 \
 		--config ./docs/api/autogen/config.yaml \
 		--templates-dir ./docs/api/autogen/templates \
 		--output-path ./docs/index.asciidoc \
@@ -142,3 +131,6 @@ api-reference: install-tools ## Generate API reference documentation
 generate-installation-manifest:
 	mkdir -p releases
 	kustomize build config/installation/ > releases/pinot-cluster-operator.yaml
+
+download-deps:
+	./scripts/download_deps.sh

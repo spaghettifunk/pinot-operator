@@ -35,8 +35,9 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 
 	"github.com/spaghettifunk/pinot-operator/api"
-	operatorsv1alpha1 "github.com/spaghettifunk/pinot-operator/api/v1alpha1"
-	"github.com/spaghettifunk/pinot-operator/controllers"
+	operatorsv1alpha1 "github.com/spaghettifunk/pinot-operator/api/pinot/v1alpha1"
+	"github.com/spaghettifunk/pinot-operator/controllers/pinot"
+	"github.com/spaghettifunk/pinot-operator/controllers/tenant"
 	"github.com/spaghettifunk/pinot-operator/pkg/k8sutil"
 	// +kubebuilder:scaffold:imports
 )
@@ -108,7 +109,14 @@ func main() {
 	// Setup all Controllers
 	setupLog.Info("setting up controller")
 
-	if err := controllers.Add(mgr); err != nil {
+	// pinot cluster controller
+	if err := pinot.Add(mgr); err != nil {
+		setupLog.Error(err, "problem adding manager")
+		os.Exit(1)
+	}
+
+	// tenants controller
+	if err := tenant.Add(mgr); err != nil {
 		setupLog.Error(err, "problem adding manager")
 		os.Exit(1)
 	}
@@ -124,7 +132,7 @@ func main() {
 
 	// Cleanup
 	setupLog.Info("removing finalizer from Pinot resources")
-	err = controllers.RemoveFinalizers(mgr.GetClient())
+	err = pinot.RemoveFinalizers(mgr.GetClient())
 	if err != nil {
 		setupLog.Error(err, "could not remove finalizers from Pinot resources")
 	}

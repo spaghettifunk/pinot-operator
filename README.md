@@ -96,3 +96,7 @@ the release notes to understand the changes and their potential impact for any r
 This project follows the typical GitHub pull request model. Before starting any work, please either comment on an [existing issue](https://github.com/spaghettifunk/pinot-operator/issues), or file a new one.
 
 Please read [contribution guidelines](CONTRIBUTING.md) if you are interested in contributing to this project.
+
+## Gotchas
+
+In case the CRD is stuck in delete phase, follow the steps in this [workaround](https://github.com/kubernetes/kubernetes/issues/60538#issuecomment-369099998)

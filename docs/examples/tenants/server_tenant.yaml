@@ -1,0 +1,10 @@
+apiVersion: operators.apache.io/v1alpha1
+kind: Tenant
+metadata:
+  name: server-tenant-sample
+  namespace: pinot-system
+spec:
+  role: server
+  name: ServerTenant
+  offlineInstances: 1
+  realtimeInstances: 1
