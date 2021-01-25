@@ -6,7 +6,6 @@ require (
 	emperror.dev/errors v0.8.0
 	github.com/Masterminds/semver/v3 v3.1.0
 	github.com/banzaicloud/k8s-objectmatcher v1.4.0
-	github.com/davecgh/go-spew v1.1.1
 	github.com/elastic/crd-ref-docs v0.0.6
 	github.com/go-logr/logr v0.1.0
 	github.com/go-openapi/strfmt v0.20.0
@@ -19,6 +18,7 @@ require (
 	github.com/shurcooL/httpfs v0.0.0-20190707220628-8d4bc4ba7749 // indirect
 	github.com/shurcooL/vfsgen v0.0.0-20200627165143-92b8a710ab6c
 	github.com/spaghettifunk/pinot-go-client v0.0.0-20210120142358-a99a0c96c73c
+	golang.org/x/lint v0.0.0-20200302205851-738671d3881b // indirect
 	golang.org/x/time v0.0.0-20190308202827-9d24e82272b4
 	golang.org/x/tools v0.0.0-20200616195046-dc31b401abb5 // indirect
 	golang.org/x/xerrors v0.0.0-20200804184101-5ec99f83aff1 // indirect

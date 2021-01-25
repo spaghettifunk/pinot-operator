@@ -20,30 +20,33 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-// Role is the type of Tenant for the Apache Pinot cluster
-// +kubebuilder:validation:Enum=broker;server
-type Role string
-
 // TenantSpec defines the desired state of Tenant
 type TenantSpec struct {
 	// The tenant role to be used
-	Role Role `json:"role"`
+	// +kubebuilder:validation:Enum=broker;server
+	Role string `json:"role" protobuf:"byte,1,opt,name=role"`
 	// Name of the tenant
-	Name string `json:"name"`
+	Name string `json:"name" protobuf:"byte,2,opt,name=name"`
 	// Number of instances to be associated with the tenant. It is used only
 	// when creating a tenant with Role Broker
 	// +optional
-	NumberOfInstances *int32 `json:"numberOfInstances,omitempty"`
+	// +kubebuilder:validation:Minimum:=0
+	// +kubebuilder:default:=0
+	NumberOfInstances *int32 `json:"numberOfInstances,omitempty" protobuf:"varint,3,opt,name=numberOfInstances"`
 	// Number of Offline instances to be associted with the tenant. It is used only
 	// when creating a tenant with Role Server
 	// +optional
-	OfflineInstances *int32 `json:"offlineInstances,omitempty"`
+	// +kubebuilder:validation:Minimum:=0
+	// +kubebuilder:default:=0
+	OfflineInstances *int32 `json:"offlineInstances,omitempty" protobuf:"varint,4,opt,name=offlineInstances"`
 	// Number of Realtime instances to be associted with the tenant. It is used only
 	// when creating a tenant with Role Server
 	// +optional
-	RealtimeInstances *int32 `json:"realtimeInstances,omitempty"`
+	// +kubebuilder:validation:Minimum:=0
+	// +kubebuilder:default:=0
+	RealtimeInstances *int32 `json:"realtimeInstances,omitempty" protobuf:"varint,5,opt,name=realtimeInstances"`
 	// +optional
-	PinotServer *NamespacedName `json:"pinotServer"`
+	PinotServer *NamespacedName `json:"pinotServer,omitempty"`
 	// +optional
 	Labels map[string]string `json:"labels,omitempty"`
 }
@@ -60,11 +63,18 @@ type NamespacedName struct {
 	Name      string `json:"name,omitempty"`
 }
 
-// +kubebuilder:object:root=true
+// +genclient
+// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 
 // Tenant is the Schema for the Tenants API
+// +k8s:openapi-gen=true
 // +kubebuilder:printcolumn:name="Role",type=string,JSONPath=`.spec.role`
+// +kubebuilder:printcolumn:name="Tenant Name",type=string,JSONPath=`.spec.name`
+// +kubebuilder:printcolumn:name="Error",type="string",JSONPath=".status.ErrorMessage",description="Error message"
+// +kubebuilder:printcolumn:name="Age",type="date",JSONPath=".metadata.creationTimestamp"
+// +kubebuilder:printcolumn:name="Pinot Cluster",type="string",JSONPath=".spec.pinotServer"
 // +kubebuilder:subresource:status
+// +kubebuilder:resource:path=tenants,shortName=tn
 type Tenant struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
@@ -73,7 +83,7 @@ type Tenant struct {
 	Status TenantStatus `json:"status,omitempty"`
 }
 
-// +kubebuilder:object:root=true
+// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 
 // TenantList contains a list of Tenant
 type TenantList struct {

@@ -68,7 +68,7 @@ vet:
 generate: download-deps api-reference
 	go generate ./pkg/...
 	bin/controller-gen object:headerFile="hack/boilerplate.go.txt" paths="./..."
-	./hack/update-codegen.sh	
+	# ./hack/update-codegen.sh	
 
 # Build the docker image
 docker-build: test

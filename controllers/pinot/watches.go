@@ -27,6 +27,7 @@ func (r *ReconcilePinot) initWatches(watchCreatedResourcesEvents bool) error {
 	var err error
 	for _, f := range []func() error{
 		r.watchPinotConfig,
+		r.watchTenant,
 		r.watchNamespace,
 	} {
 		err = f()
@@ -88,7 +89,7 @@ func (r *ReconcilePinot) watchNamespace() error {
 }
 
 func (r *ReconcilePinot) watchPinotConfig() error {
-	err := r.Ctrl.Watch(
+	return r.Ctrl.Watch(
 		&source.Kind{
 			Type: &pinotv1alpha1.Pinot{
 				TypeMeta: metav1.TypeMeta{
@@ -100,15 +101,36 @@ func (r *ReconcilePinot) watchPinotConfig() error {
 		&handler.EnqueueRequestForObject{},
 		k8sutil.GetWatchPredicateForPinot(),
 	)
-	if err != nil {
-		return err
-	}
+}
 
-	return nil
+func (r *ReconcilePinot) watchTenant() error {
+	return r.Ctrl.Watch(
+		&source.Kind{
+			Type: &pinotv1alpha1.Tenant{
+				TypeMeta: metav1.TypeMeta{
+					Kind:       "Tenant",
+					APIVersion: pinotv1alpha1.GroupVersion.String(),
+				},
+			},
+		},
+		&handler.EnqueueRequestsFromMapFunc{
+			ToRequests: handler.ToRequestsFunc(func(object handler.MapObject) []reconcile.Request {
+				if t, ok := object.Object.(*pinotv1alpha1.Tenant); ok && t.Spec.PinotServer != nil {
+					return []reconcile.Request{
+						{
+							NamespacedName: types.NamespacedName(*t.Spec.PinotServer),
+						},
+					}
+				}
+				return nil
+			}),
+		},
+		k8sutil.GetWatchPredicateForTenant(),
+	)
 }
 
 func (r *ReconcilePinot) watchResource(resource runtime.Object) error {
-	err := r.Ctrl.Watch(
+	return r.Ctrl.Watch(
 		&source.Kind{
 			Type: resource,
 		},
@@ -123,15 +145,10 @@ func (r *ReconcilePinot) watchResource(resource runtime.Object) error {
 			},
 		}, true, r.Manager.GetScheme(), log),
 	)
-	if err != nil {
-		return err
-	}
-
-	return nil
 }
 
 func (r *ReconcilePinot) watchCRDs(nn types.NamespacedName) error {
-	err := r.Ctrl.Watch(
+	return r.Ctrl.Watch(
 		&source.Kind{
 			Type: &apiextensionsv1.CustomResourceDefinition{
 				TypeMeta: metav1.TypeMeta{
@@ -151,6 +168,4 @@ func (r *ReconcilePinot) watchCRDs(nn types.NamespacedName) error {
 		},
 		crds.GetWatchPredicateForCRDs(),
 	)
-
-	return err
 }

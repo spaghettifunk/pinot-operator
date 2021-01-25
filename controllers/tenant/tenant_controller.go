@@ -19,13 +19,17 @@ package tenant
 import (
 	"context"
 	"sort"
+	"strings"
+	"time"
 
 	"github.com/go-logr/logr"
+	"github.com/go-openapi/strfmt"
 	"github.com/gofrs/uuid"
 	"github.com/goph/emperror"
 	"github.com/pkg/errors"
+	"github.com/spaghettifunk/pinot-go-client/client/tenant"
 	"github.com/spaghettifunk/pinot-operator/pkg/k8sutil"
-	"github.com/spaghettifunk/pinot-operator/pkg/resources/tenant"
+	"github.com/spaghettifunk/pinot-operator/pkg/sdk"
 	"github.com/spaghettifunk/pinot-operator/pkg/util"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -41,11 +45,15 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 	"sigs.k8s.io/controller-runtime/pkg/source"
 
+	pinotsdk "github.com/spaghettifunk/pinot-go-client/client"
+	"github.com/spaghettifunk/pinot-go-client/models"
 	operatorsv1alpha1 "github.com/spaghettifunk/pinot-operator/api/pinot/v1alpha1"
 	logf "sigs.k8s.io/controller-runtime/pkg/runtime/log"
 )
 
 var log = logf.Log.WithName("controller")
+
+const finalizerID = "pinot-tenant.finalizer.apache.io"
 
 func Add(mgr manager.Manager) error {
 	return add(mgr, newReconciler(mgr))
@@ -86,19 +94,20 @@ var _ reconcile.Reconciler = &ReconcilerTenant{}
 // ReconcilerTenant reconciles a Tenant object
 type ReconcilerTenant struct {
 	client.Client
-	Log    logr.Logger
-	Scheme *runtime.Scheme
+	Log         logr.Logger
+	Scheme      *runtime.Scheme
+	PinotClient *pinotsdk.PinotSdk
 }
 
-// +kubebuilder:rbac:groups=operators.apache.io,resources=Tenants,verbs=get;list;watch;create;update;patch;delete
-// +kubebuilder:rbac:groups=operators.apache.io,resources=Tenants/status,verbs=get;update;patch
+// +kubebuilder:rbac:groups=operators.apache.io,resources=tenants;tenants/finalizers,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups=operators.apache.io,resources=tenants/status,verbs=get;update;patch
 
 func (r *ReconcilerTenant) Reconcile(request ctrl.Request) (ctrl.Result, error) {
 	logger := log.WithValues("trigger", request.Namespace+"/"+request.Name, "correlationID", uuid.Must(uuid.NewV4()).String())
 
 	// Fetch the Tenant instance
-	t := &operatorsv1alpha1.Tenant{}
-	err := r.Get(context.TODO(), request.NamespacedName, t)
+	config := &operatorsv1alpha1.Tenant{}
+	err := r.Get(context.TODO(), request.NamespacedName, config)
 	if err != nil {
 		if k8serrors.IsNotFound(err) {
 			return reconcile.Result{}, nil
@@ -106,11 +115,11 @@ func (r *ReconcilerTenant) Reconcile(request ctrl.Request) (ctrl.Result, error) 
 		return reconcile.Result{}, err
 	}
 
-	operatorsv1alpha1.SetTenantDefaults(t)
+	logger.Info("Reconciling Tenant")
 
-	pinot, err := r.getRelatedPinotCR(t)
+	pinot, err := r.getRelatedPinotCR(config)
 	if err != nil {
-		updateErr := updateStatus(r.Client, t, operatorsv1alpha1.ReconcileFailed, err.Error(), logger)
+		updateErr := updateStatus(r.Client, config, operatorsv1alpha1.ReconcileFailed, err.Error(), logger)
 		if updateErr != nil {
 			logger.Error(updateErr, "failed to update state")
 			return reconcile.Result{}, errors.WithStack(err)
@@ -121,23 +130,25 @@ func (r *ReconcilerTenant) Reconcile(request ctrl.Request) (ctrl.Result, error) 
 	}
 	operatorsv1alpha1.SetPinotDefaults(pinot)
 
-	t.Spec.Labels = util.MergeStringMaps(t.Spec.Labels, pinot.RevisionLabels())
-
-	if err := updateStatus(r.Client, t, operatorsv1alpha1.Reconciling, "", logger); err != nil {
-		return reconcile.Result{}, errors.WithStack(err)
+	// if the pinot sdk is not initialized, do it now
+	if r.PinotClient == nil {
+		r.PinotClient = pinotsdk.NewHTTPClientWithConfig(strfmt.Default, &pinotsdk.TransportConfig{
+			Host:     sdk.GeneratePinotControllerAddress(pinot),
+			BasePath: pinotsdk.DefaultBasePath,
+			Schemes:  []string{"http"},
+		})
 	}
 
-	reconciler := tenant.New(r.Client, pinot)
-	if err := reconciler.Reconcile(log); err != nil {
-		logger.Error(err, "failed to reconcile tenant")
-		return reconcile.Result{}, errors.WithStack(err)
+	result, err := r.reconcile(logger, config)
+	if err != nil {
+		updateErr := updateStatus(r.Client, config, operatorsv1alpha1.ReconcileFailed, err.Error(), logger)
+		if updateErr != nil {
+			logger.Error(updateErr, "failed to update state")
+			return result, errors.WithStack(err)
+		}
+		return result, emperror.Wrap(err, "could not reconcile Tenant")
 	}
-
-	if err = updateStatus(r.Client, t, operatorsv1alpha1.Available, "", logger); err != nil {
-		return reconcile.Result{}, errors.WithStack(err)
-	}
-
-	return ctrl.Result{}, nil
+	return result, nil
 }
 
 func (r *ReconcilerTenant) getRelatedPinotCR(instance *operatorsv1alpha1.Tenant) (*operatorsv1alpha1.Pinot, error) {
@@ -177,6 +188,62 @@ func (r *ReconcilerTenant) getRelatedPinotCR(instance *operatorsv1alpha1.Tenant)
 	return &config, nil
 }
 
+func (r *ReconcilerTenant) reconcile(logger logr.Logger, config *operatorsv1alpha1.Tenant) (reconcile.Result, error) {
+	if config.Status.Status == "" {
+		err := updateStatus(r.Client, config, operatorsv1alpha1.Created, "", logger)
+		if err != nil {
+			return reconcile.Result{}, errors.WithStack(err)
+		}
+	}
+
+	// add finalizer strings and update
+	if config.ObjectMeta.DeletionTimestamp.IsZero() {
+		if !util.ContainsString(config.ObjectMeta.Finalizers, finalizerID) {
+			config.ObjectMeta.Finalizers = append(config.ObjectMeta.Finalizers, finalizerID)
+			if err := r.Update(context.Background(), config); err != nil {
+				return reconcile.Result{}, emperror.Wrap(err, "could not add finalizer to config")
+			}
+			return reconcile.Result{
+				RequeueAfter: time.Second * 1,
+			}, nil
+		}
+	} else {
+		// Deletion timestamp set, config is marked for deletion
+		if util.ContainsString(config.ObjectMeta.Finalizers, finalizerID) {
+			if config.Status.Status == operatorsv1alpha1.Reconciling && config.Status.ErrorMessage == "" {
+				logger.Info("cannot remove Tenant while reconciling")
+				return reconcile.Result{}, nil
+			}
+			if err := r.deleteTenantResources(config); err != nil {
+				return ctrl.Result{}, emperror.Wrap(err, "could not remove tenant")
+			}
+
+			config.ObjectMeta.Finalizers = util.RemoveString(config.ObjectMeta.Finalizers, finalizerID)
+			if err := r.Update(context.Background(), config); err != nil {
+				return reconcile.Result{}, emperror.Wrap(err, "could not remove finalizer from config")
+			}
+		}
+		logger.Info("Tenant removed")
+		return reconcile.Result{}, nil
+	}
+
+	err := updateStatus(r.Client, config, operatorsv1alpha1.Reconciling, "", logger)
+	if err != nil {
+		return reconcile.Result{}, errors.WithStack(err)
+	}
+
+	// upsert tenant
+	if err := r.upsertTenantResource(config); err != nil {
+		return reconcile.Result{}, errors.WithStack(err)
+	}
+
+	err = updateStatus(r.Client, config, operatorsv1alpha1.Available, "", logger)
+	if err != nil {
+		return reconcile.Result{}, errors.WithStack(err)
+	}
+	return reconcile.Result{}, nil
+}
+
 func updateStatus(c client.Client, instance *operatorsv1alpha1.Tenant, status operatorsv1alpha1.ConfigState, errorMessage string, logger logr.Logger) error {
 	typeMeta := instance.TypeMeta
 	instance.Status.Status = status
@@ -214,4 +281,53 @@ func updateStatus(c client.Client, instance *operatorsv1alpha1.Tenant, status op
 	logger.Info("tenant state updated", "status", status)
 
 	return nil
+}
+
+func (r *ReconcilerTenant) upsertTenantResource(config *operatorsv1alpha1.Tenant) error {
+	role := strings.ToUpper(config.Spec.Role)
+
+	// get tenant metadata
+	res, err := r.PinotClient.Tenant.GetTenantMetadata(&tenant.GetTenantMetadataParams{
+		Type:    util.StrPointer(role),
+		Context: context.Background(),
+	})
+	if _, ok := err.(*tenant.GetTenantMetadataNotFound); !ok {
+		return err
+	}
+
+	// if tenant exists, update it
+	if res != nil && (len(res.Payload.BrokerInstances) > 0 || len(res.Payload.ServerInstances) > 0) {
+		_, err = r.PinotClient.Tenant.UpdateTenant(&tenant.UpdateTenantParams{
+			Body: &models.Tenant{
+				TenantRole:        role,
+				TenantName:        config.Spec.Name,
+				NumberOfInstances: util.PointerToInt32(config.Spec.NumberOfInstances),
+				OfflineInstances:  util.PointerToInt32(config.Spec.OfflineInstances),
+				RealtimeInstances: util.PointerToInt32(config.Spec.RealtimeInstances),
+			},
+			Context: context.Background(),
+		})
+	} else {
+		// create the new tenant
+		_, err = r.PinotClient.Tenant.CreateTenant(&tenant.CreateTenantParams{
+			Body: &models.Tenant{
+				TenantRole:        role,
+				TenantName:        config.Spec.Name,
+				NumberOfInstances: util.PointerToInt32(config.Spec.NumberOfInstances),
+				OfflineInstances:  util.PointerToInt32(config.Spec.OfflineInstances),
+				RealtimeInstances: util.PointerToInt32(config.Spec.RealtimeInstances),
+			},
+			Context: context.Background(),
+		})
+	}
+	return err
+}
+
+func (r *ReconcilerTenant) deleteTenantResources(config *operatorsv1alpha1.Tenant) error {
+	_, err := r.PinotClient.Tenant.DeleteTenant(&tenant.DeleteTenantParams{
+		TenantName: config.Spec.Name,
+		Type:       strings.ToUpper(config.Spec.Role),
+		Context:    context.Background(),
+	})
+	return err
 }
