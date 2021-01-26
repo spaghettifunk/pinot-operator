@@ -2,6 +2,7 @@ package sdk
 
 import (
 	"fmt"
+	"os"
 
 	operatorsv1alpha1 "github.com/spaghettifunk/pinot-operator/api/pinot/v1alpha1"
 )
@@ -13,7 +14,9 @@ const (
 
 // GeneratePinotControlleAddressWithoutPort returns the host of the controller service
 func GeneratePinotControlleAddressWithoutPort(config *operatorsv1alpha1.Pinot) string {
-	// return "localhost"
+	if os.Getenv("LOCAL_DEBUG") == "true" {
+		return "localhost"
+	}
 	return fmt.Sprintf("%s.%s.svc.%s",
 		pinotControllerHeadless,
 		config.Namespace,

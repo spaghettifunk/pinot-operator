@@ -318,9 +318,3 @@ func RemoveFinalizers(c client.Client) error {
 	}
 	return nil
 }
-
-func (r *ReconcilePinot) SetupWithManager(mgr ctrl.Manager) error {
-	return ctrl.NewControllerManagedBy(mgr).
-		For(&pinotv1alpha1.Pinot{}).
-		Complete(r)
-}
