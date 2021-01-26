@@ -235,9 +235,23 @@ func (r *ReconcilePinot) reconcile(logger logr.Logger, config *pinotv1alpha1.Pin
 		}
 	})
 
-	// for each component do a reconciliation
+	// reconcile Zookeeper first
+	zkReconciler := pinotzookeeper.New(r.Client, config)
+	err = zkReconciler.Reconcile(logger)
+	if err != nil {
+		return reconcile.Result{}, err
+	}
+
+	// wait for zookeeper
+	if err := zkReconciler.WaitForCreation(); err != nil {
+		logger.Info("zookeeper is not ready")
+		return reconcile.Result{
+			RequeueAfter: time.Second * 10,
+		}, nil
+	}
+
+	// reconcile all the rest of the resources
 	reconcilers := []resources.ComponentReconciler{
-		pinotzookeeper.New(r.Client, config),
 		pinotserver.New(r.Client, config),
 		pinotcontroller.New(r.Client, config),
 		pinotbroker.New(r.Client, config),

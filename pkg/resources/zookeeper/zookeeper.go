@@ -1,7 +1,13 @@
 package zookeeper
 
 import (
+	"context"
+	"fmt"
+
+	"emperror.dev/errors"
 	pinotv1alpha1 "github.com/spaghettifunk/pinot-operator/api/pinot/v1alpha1"
+	v1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/labels"
 
 	"github.com/go-logr/logr"
 	"github.com/goph/emperror"
@@ -84,4 +90,35 @@ func (r *Reconciler) selector(name string) map[string]string {
 		"release":   "pinot",
 		"component": name,
 	}
+}
+
+func (r *Reconciler) WaitForCreation() error {
+	var pods v1.PodList
+	ls, err := labels.Parse(fmt.Sprintf("component=%s", componentName))
+	if err != nil {
+		return err
+	}
+
+	err = r.Client.List(context.Background(), &pods, client.InNamespace(r.Config.Namespace), client.MatchingLabelsSelector{
+		Selector: ls,
+	})
+	if err != nil {
+		return emperror.Wrap(err, "could not list pods")
+	}
+
+	readyContainers := 0
+	for _, pod := range pods.Items {
+		if pod.Status.Phase == v1.PodRunning {
+			for _, cs := range pod.Status.ContainerStatuses {
+				if cs.Ready {
+					readyContainers++
+				}
+			}
+			// wait for all the containers to be ready before continuing
+			if readyContainers == (len(pod.Status.ContainerStatuses) * len(pods.Items)) {
+				return nil
+			}
+		}
+	}
+	return errors.Errorf("Zookeeper is not ready yet")
 }
