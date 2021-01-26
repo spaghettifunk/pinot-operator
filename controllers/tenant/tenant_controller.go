@@ -53,7 +53,11 @@ import (
 
 var log = logf.Log.WithName("controller")
 
-const finalizerID = "pinot-tenant.finalizer.apache.io"
+const (
+	finalizerID = "pinot-tenant.finalizer.apache.io"
+	brokerRole  = "BROKER"
+	serverRole  = "SERVER"
+)
 
 func Add(mgr manager.Manager) error {
 	return add(mgr, newReconciler(mgr))
@@ -113,6 +117,13 @@ func (r *ReconcilerTenant) Reconcile(request ctrl.Request) (ctrl.Result, error) 
 			return reconcile.Result{}, nil
 		}
 		return reconcile.Result{}, err
+	}
+
+	logger.Info("Validating Tenant")
+
+	if err := validateTenant(logger, config); err != nil {
+		logger.Error(err, "tenant validation failed")
+		return reconcile.Result{}, errors.WithStack(err)
 	}
 
 	logger.Info("Reconciling Tenant")
@@ -244,6 +255,23 @@ func (r *ReconcilerTenant) reconcile(logger logr.Logger, config *operatorsv1alph
 	return reconcile.Result{}, nil
 }
 
+func validateTenant(logger logr.Logger, config *operatorsv1alpha1.Tenant) error {
+	var err error
+	switch strings.ToUpper(config.Spec.Role) {
+	case brokerRole:
+		if util.PointerToInt32(config.Spec.OfflineInstances) > 0 || util.PointerToInt32(config.Spec.RealtimeInstances) > 0 {
+			err = errors.New("Tenant of type BROKER cannot have 'offline' or 'realtime' instances")
+		}
+	case serverRole:
+		if util.PointerToInt32(config.Spec.NumberOfInstances) > 0 {
+			err = errors.New("Tenant of type SERVER cannot have 'numberOfInstances' set")
+		}
+	default:
+		err = errors.New("unknown role type")
+	}
+	return err
+}
+
 func updateStatus(c client.Client, instance *operatorsv1alpha1.Tenant, status operatorsv1alpha1.ConfigState, errorMessage string, logger logr.Logger) error {
 	typeMeta := instance.TypeMeta
 	instance.Status.Status = status
@@ -330,4 +358,19 @@ func (r *ReconcilerTenant) deleteTenantResources(config *operatorsv1alpha1.Tenan
 		Context:    context.Background(),
 	})
 	return err
+}
+
+// RemoveFinalizers removes the finalizers from the context
+func RemoveFinalizers(c client.Client) error {
+	var tenants operatorsv1alpha1.TenantList
+	for _, tenant := range tenants.Items {
+		tenant.ObjectMeta.Finalizers = util.RemoveString(tenant.ObjectMeta.Finalizers, finalizerID)
+		if err := c.Update(context.Background(), &tenant); err != nil {
+			return emperror.WrapWith(err, "could not remove finalizer from Tenant resource", "name", tenant.GetName())
+		}
+		if err := updateStatus(c, &tenant, operatorsv1alpha1.Unmanaged, "", log); err != nil {
+			return emperror.Wrap(err, "could not update status of Tenant resource")
+		}
+	}
+	return nil
 }
