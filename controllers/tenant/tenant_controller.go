@@ -121,7 +121,7 @@ func (r *ReconcilerTenant) Reconcile(request ctrl.Request) (ctrl.Result, error) 
 
 	logger.Info("Validating Tenant")
 
-	if err := validateTenant(logger, config); err != nil {
+	if err := r.validateTenant(logger, config); err != nil {
 		logger.Error(err, "tenant validation failed")
 		return reconcile.Result{}, errors.WithStack(err)
 	}
@@ -255,7 +255,7 @@ func (r *ReconcilerTenant) reconcile(logger logr.Logger, config *operatorsv1alph
 	return reconcile.Result{}, nil
 }
 
-func validateTenant(logger logr.Logger, config *operatorsv1alpha1.Tenant) error {
+func (r *ReconcilerTenant) validateTenant(logger logr.Logger, config *operatorsv1alpha1.Tenant) error {
 	var err error
 	switch strings.ToUpper(config.Spec.Role) {
 	case brokerRole:

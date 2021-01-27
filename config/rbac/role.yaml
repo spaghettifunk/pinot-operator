@@ -71,6 +71,46 @@ rules:
 - apiGroups:
   - operators.apache.io
   resources:
+  - schemas
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - operators.apache.io
+  resources:
+  - schemas/status
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - operators.apache.io
+  resources:
+  - tables
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - operators.apache.io
+  resources:
+  - tables/status
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - operators.apache.io
+  resources:
   - tenants
   - tenants/finalizers
   verbs:

@@ -7,4 +7,10 @@ resources:
 - group: operators
   kind: Tenant
   version: v1alpha1
+- group: operators
+  kind: Schema
+  version: v1alpha1
+- group: operators
+  kind: Table
+  version: v1alpha1
 version: "2"

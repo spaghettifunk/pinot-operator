@@ -15,3 +15,9 @@ const (
 	// Unmanaged status when the system is not sure what to do
 	Unmanaged ConfigState = "Unmanaged"
 )
+
+// NamespacedName contains reference to a resource
+type NamespacedName struct {
+	Namespace string `json:"namespace,omitempty"`
+	Name      string `json:"name,omitempty"`
+}

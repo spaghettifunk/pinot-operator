@@ -38,6 +38,8 @@ import (
 	"github.com/spaghettifunk/pinot-operator/api"
 	operatorsv1alpha1 "github.com/spaghettifunk/pinot-operator/api/pinot/v1alpha1"
 	"github.com/spaghettifunk/pinot-operator/controllers/pinot"
+	"github.com/spaghettifunk/pinot-operator/controllers/schema"
+	"github.com/spaghettifunk/pinot-operator/controllers/table"
 	"github.com/spaghettifunk/pinot-operator/controllers/tenant"
 	"github.com/spaghettifunk/pinot-operator/pkg/k8sutil"
 	// +kubebuilder:scaffold:imports
@@ -118,6 +120,18 @@ func main() {
 
 	// tenants controller
 	if err := tenant.Add(mgr); err != nil {
+		setupLog.Error(err, "problem adding manager")
+		os.Exit(1)
+	}
+
+	// schema controller
+	if err := schema.Add(mgr); err != nil {
+		setupLog.Error(err, "problem adding manager")
+		os.Exit(1)
+	}
+
+	// table controller
+	if err := table.Add(mgr); err != nil {
 		setupLog.Error(err, "problem adding manager")
 		os.Exit(1)
 	}
