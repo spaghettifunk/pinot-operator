@@ -2,10 +2,10 @@
 # since it depends on service name and namespace that are out of this kustomize package.
 # It should be run by config/default
 resources:
-- bases/operators.apache.io_pinots.yaml
-- bases/operators.apache.io_tenants.yaml
-- bases/operators.apache.io_schemas.yaml
-- bases/operators.apache.io_tables.yaml
+- bases/pinot.apache.io_pinots.yaml
+- bases/pinot.apache.io_tenants.yaml
+- bases/pinot.apache.io_schemas.yaml
+- bases/pinot.apache.io_tables.yaml
 # +kubebuilder:scaffold:crdkustomizeresource
 
 patchesStrategicMerge:

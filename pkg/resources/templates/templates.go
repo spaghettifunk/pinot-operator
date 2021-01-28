@@ -5,7 +5,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 
-	"github.com/spaghettifunk/pinot-operator/api/pinot/v1alpha1"
+	"github.com/spaghettifunk/pinot-operator/pkg/apis/pinot/v1alpha1"
 	"github.com/spaghettifunk/pinot-operator/pkg/util"
 )
 

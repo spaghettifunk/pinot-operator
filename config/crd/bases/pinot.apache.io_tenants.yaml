@@ -6,9 +6,9 @@ metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.4.0
   creationTimestamp: null
-  name: tenants.operators.apache.io
+  name: tenants.pinot.apache.io
 spec:
-  group: operators.apache.io
+  group: pinot.apache.io
   names:
     kind: Tenant
     listKind: TenantList

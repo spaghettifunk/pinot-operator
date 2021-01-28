@@ -30,7 +30,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 	"sigs.k8s.io/controller-runtime/pkg/source"
 
-	operatorsv1alpha1 "github.com/spaghettifunk/pinot-operator/api/pinot/v1alpha1"
+	operatorsv1alpha1 "github.com/spaghettifunk/pinot-operator/pkg/apis/pinot/v1alpha1"
 	"github.com/spaghettifunk/pinot-operator/pkg/k8sutil"
 	logf "sigs.k8s.io/controller-runtime/pkg/runtime/log"
 )
@@ -65,7 +65,7 @@ func add(mgr manager.Manager, r reconcile.Reconciler) error {
 	err = c.Watch(&source.Kind{Type: &operatorsv1alpha1.Table{
 		TypeMeta: metav1.TypeMeta{
 			Kind:       "Schema",
-			APIVersion: "operators.apache.io/v1alpha1",
+			APIVersion: "pinot.apache.io/v1alpha1",
 		},
 	},
 	}, &handler.EnqueueRequestForObject{}, k8sutil.GetWatchPredicateForTable())
@@ -84,8 +84,8 @@ type ReconcilerTable struct {
 	Scheme *runtime.Scheme
 }
 
-// +kubebuilder:rbac:groups=operators.apache.io,resources=tables,verbs=get;list;watch;create;update;patch;delete
-// +kubebuilder:rbac:groups=operators.apache.io,resources=tables/status,verbs=get;update;patch
+// +kubebuilder:rbac:groups=pinot.apache.io,resources=tables,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups=pinot.apache.io,resources=tables/status,verbs=get;update;patch
 
 func (r *ReconcilerTable) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 	_ = context.Background()

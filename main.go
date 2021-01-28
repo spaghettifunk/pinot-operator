@@ -35,12 +35,12 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 
-	"github.com/spaghettifunk/pinot-operator/api"
-	operatorsv1alpha1 "github.com/spaghettifunk/pinot-operator/api/pinot/v1alpha1"
 	"github.com/spaghettifunk/pinot-operator/controllers/pinot"
 	"github.com/spaghettifunk/pinot-operator/controllers/schema"
 	"github.com/spaghettifunk/pinot-operator/controllers/table"
 	"github.com/spaghettifunk/pinot-operator/controllers/tenant"
+	api "github.com/spaghettifunk/pinot-operator/pkg/apis"
+	operatorsv1alpha1 "github.com/spaghettifunk/pinot-operator/pkg/apis/pinot/v1alpha1"
 	"github.com/spaghettifunk/pinot-operator/pkg/k8sutil"
 	// +kubebuilder:scaffold:imports
 )

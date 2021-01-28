@@ -5,7 +5,7 @@ import (
 	"os"
 
 	models "github.com/spaghettifunk/pinot-go-client/models"
-	operatorsv1alpha1 "github.com/spaghettifunk/pinot-operator/api/pinot/v1alpha1"
+	operatorsv1alpha1 "github.com/spaghettifunk/pinot-operator/pkg/apis/pinot/v1alpha1"
 	"github.com/spaghettifunk/pinot-operator/pkg/util"
 )
 

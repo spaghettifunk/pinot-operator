@@ -6,9 +6,9 @@ metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.4.0
   creationTimestamp: null
-  name: schemas.operators.apache.io
+  name: schemas.pinot.apache.io
 spec:
-  group: operators.apache.io
+  group: pinot.apache.io
   names:
     kind: Schema
     listKind: SchemaList

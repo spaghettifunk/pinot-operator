@@ -54,7 +54,7 @@ deploy: manifests
 
 # Generate manifests e.g. CRD, RBAC etc.
 manifests: download-deps
-	bin/controller-gen $(CRD_OPTIONS) rbac:roleName=operator-role paths="./api/...;./controllers/..." output:crd:artifacts:config=config/crd/bases	
+	bin/controller-gen $(CRD_OPTIONS) rbac:roleName=operator-role paths="./pkg/apis/...;./controllers/..." output:crd:artifacts:config=config/crd/bases	
 
 # Run go fmt against code
 fmt:
@@ -121,7 +121,7 @@ install-tools:
 # documentation
 api-reference: install-tools ## Generate API reference documentation
 	crd-ref-docs \
-		--source-path ./api/pinot/v1alpha1 \
+		--source-path ./pkg/apis/pinot/v1alpha1 \
 		--config ./docs/api/autogen/config.yaml \
 		--templates-dir ./docs/api/autogen/templates \
 		--output-path ./docs/index.asciidoc \

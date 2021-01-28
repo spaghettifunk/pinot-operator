@@ -1,4 +1,4 @@
-apiVersion: operators.apache.io/v1alpha1
+apiVersion: pinot.apache.io/v1alpha1
 kind: Table
 metadata:
   name: table-sample

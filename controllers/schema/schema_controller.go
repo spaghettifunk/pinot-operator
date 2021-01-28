@@ -40,7 +40,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 	"sigs.k8s.io/controller-runtime/pkg/source"
 
-	operatorsv1alpha1 "github.com/spaghettifunk/pinot-operator/api/pinot/v1alpha1"
+	operatorsv1alpha1 "github.com/spaghettifunk/pinot-operator/pkg/apis/pinot/v1alpha1"
 	"github.com/spaghettifunk/pinot-operator/pkg/k8sutil"
 	"github.com/spaghettifunk/pinot-operator/pkg/sdk"
 	"github.com/spaghettifunk/pinot-operator/pkg/util"
@@ -77,7 +77,7 @@ func add(mgr manager.Manager, r reconcile.Reconciler) error {
 	err = c.Watch(&source.Kind{Type: &operatorsv1alpha1.Schema{
 		TypeMeta: metav1.TypeMeta{
 			Kind:       "Schema",
-			APIVersion: "operators.apache.io/v1alpha1",
+			APIVersion: "pinot.apache.io/v1alpha1",
 		},
 	},
 	}, &handler.EnqueueRequestForObject{}, k8sutil.GetWatchPredicateForSchema())
@@ -97,8 +97,8 @@ type ReconcilerSchema struct {
 	PinotClient *pinotsdk.PinotSdk
 }
 
-// +kubebuilder:rbac:groups=operators.apache.io,resources=schemas,verbs=get;list;watch;create;update;patch;delete
-// +kubebuilder:rbac:groups=operators.apache.io,resources=schemas/status,verbs=get;update;patch
+// +kubebuilder:rbac:groups=pinot.apache.io,resources=schemas,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups=pinot.apache.io,resources=schemas/status,verbs=get;update;patch
 
 func (r *ReconcilerSchema) Reconcile(request ctrl.Request) (ctrl.Result, error) {
 	logger := log.WithValues("trigger", request.Namespace+"/"+request.Name, "correlationID", uuid.Must(uuid.NewV4()).String())

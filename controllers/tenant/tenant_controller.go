@@ -47,7 +47,7 @@ import (
 
 	pinotsdk "github.com/spaghettifunk/pinot-go-client/client"
 	"github.com/spaghettifunk/pinot-go-client/models"
-	operatorsv1alpha1 "github.com/spaghettifunk/pinot-operator/api/pinot/v1alpha1"
+	operatorsv1alpha1 "github.com/spaghettifunk/pinot-operator/pkg/apis/pinot/v1alpha1"
 	logf "sigs.k8s.io/controller-runtime/pkg/runtime/log"
 )
 
@@ -83,7 +83,7 @@ func add(mgr manager.Manager, r reconcile.Reconciler) error {
 	err = c.Watch(&source.Kind{Type: &operatorsv1alpha1.Tenant{
 		TypeMeta: metav1.TypeMeta{
 			Kind:       "Tenant",
-			APIVersion: "operators.apache.io/v1alpha1",
+			APIVersion: "pinot.apache.io/v1alpha1",
 		},
 	},
 	}, &handler.EnqueueRequestForObject{}, k8sutil.GetWatchPredicateForTenant())
@@ -103,8 +103,8 @@ type ReconcilerTenant struct {
 	PinotClient *pinotsdk.PinotSdk
 }
 
-// +kubebuilder:rbac:groups=operators.apache.io,resources=tenants;tenants/finalizers,verbs=get;list;watch;create;update;patch;delete
-// +kubebuilder:rbac:groups=operators.apache.io,resources=tenants/status,verbs=get;update;patch
+// +kubebuilder:rbac:groups=pinot.apache.io,resources=tenants;tenants/finalizers,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups=pinot.apache.io,resources=tenants/status,verbs=get;update;patch
 
 func (r *ReconcilerTenant) Reconcile(request ctrl.Request) (ctrl.Result, error) {
 	logger := log.WithValues("trigger", request.Namespace+"/"+request.Name, "correlationID", uuid.Must(uuid.NewV4()).String())
