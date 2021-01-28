@@ -27,6 +27,7 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/goph/emperror"
 	pinotsdk "github.com/spaghettifunk/pinot-go-client/client"
+	"github.com/spaghettifunk/pinot-go-client/client/schema"
 	k8serrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -233,6 +234,8 @@ func updateStatus(c client.Client, instance *operatorsv1alpha1.Schema, status op
 }
 
 func (r *ReconcilerSchema) validateSchema(logger logr.Logger, config *operatorsv1alpha1.Schema) error {
+	// TODO: validation using the Pinot APIs is really complex and no documentation is available.
+	// The APIs are quite inconsistent which makes it difficult to use
 	return nil
 }
 
@@ -293,11 +296,45 @@ func (r *ReconcilerSchema) reconcile(logger logr.Logger, config *operatorsv1alph
 }
 
 func (r *ReconcilerSchema) upsertSchemaResource(config *operatorsv1alpha1.Schema) error {
-	return nil
+	ctx := context.Background()
+
+	// get schema
+	_, err := r.PinotClient.Schema.GetSchema(&schema.GetSchemaParams{
+		SchemaName: config.Spec.Name,
+		Context:    ctx,
+	})
+	if _, ok := err.(*schema.GetSchemaNotFound); ok {
+		// create schema
+		_, err := r.PinotClient.Schema.AddSchema(&schema.AddSchemaParams{
+			Body:     sdk.ConvertCRDSchemaToSDKSchema(config),
+			Override: util.BoolPointer(true),
+			Context:  ctx,
+		})
+		return err
+	}
+	// TODO: not the best solution. The problem is that the apache pinot APIs for updating/validating a schema
+	// are very inconsistent and difficult to use. For now, this helps in moving on. Not sure about the
+	// implications if data is already present in a table
+
+	// delete and create new schema
+	if err := r.deleteSchemaResources(config); err != nil {
+		return emperror.Wrap(err, "could not update Schema resource")
+	}
+	// create schema
+	_, err = r.PinotClient.Schema.AddSchema(&schema.AddSchemaParams{
+		Body:     sdk.ConvertCRDSchemaToSDKSchema(config),
+		Override: util.BoolPointer(true),
+		Context:  ctx,
+	})
+	return err
 }
 
 func (r *ReconcilerSchema) deleteSchemaResources(config *operatorsv1alpha1.Schema) error {
-	return nil
+	_, err := r.PinotClient.Schema.DeleteSchema(&schema.DeleteSchemaParams{
+		SchemaName: config.Spec.Name,
+		Context:    context.Background(),
+	})
+	return err
 }
 
 // RemoveFinalizers removes the finalizers from the context

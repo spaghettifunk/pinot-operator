@@ -49,21 +49,21 @@ type SchemaSpec struct {
 
 // DimensionFieldSpec is typically used in slice and dice operations for answering business queries
 type DimensionFieldSpec struct {
-	CommonColumnSpec
+	CommonColumnSpec `json:"-"`
 }
 
 // MetricFieldSpec represents the quantitative data of the table. Such columns are used for aggregation.
 // In data warehouse terminology, these can also be referred to as fact or measure columns
 type MetricFieldSpec struct {
-	CommonColumnSpec
+	CommonColumnSpec `json:"-"`
 }
 
 // DatetimeFieldSpec represents time columns in the data. There can be multiple time columns in a table, but only one of them
 // can be treated as primary. Primary time column is the one that is present in the segment config.
 type DatetimeFieldSpec struct {
-	Format      *string `json:"format"`
-	Granularity *string `json:"granularity"`
-	CommonColumnSpec
+	Format           *string `json:"format"`
+	Granularity      *string `json:"granularity"`
+	CommonColumnSpec `json:"-"`
 }
 
 // TimeFieldSpec represents the granularity for both ingestion and query segments
@@ -73,7 +73,7 @@ type TimeFieldSpec struct {
 	// +optional
 	OutgoingGranularity *TimeGranularitySpec `json:"outgoingGranularity"`
 	// +optional
-	CommonColumnSpec
+	CommonColumnSpec `json:"-"`
 }
 
 // TimeGranularitySpec represents the granularity object
@@ -82,13 +82,11 @@ type TimeGranularitySpec struct {
 	Name *string `json:"name"`
 	// +kubebuilder:validation:Optional
 	// +kubebuilder:validation:Enum=INT;LONG;FLOAT;DOUBLE;BOOLEAN;STRING;BYTES;STRUCT;MAP;LIST
-	// +kubebuilder:default:=none
 	DataType *string `json:"dataType"`
 	// TimeType is one of  TimeUnit enum values. e.g. HOURS , MINUTES etc. If your date is not in EPOCH format,
 	// this value is not used and can be set to MILLISECONDS or any other unit.
 	// +kubebuilder:validation:Optional
 	// +kubebuilder:validation:Enum=NANOSECONDS;MICROSECONDS;MILLISECONDS;SECONDS;MINUTES;HOURS;DAYS
-	// +kubebuilder:default:=none
 	TimeType *string `json:"typeType"`
 	// TimeUnitSize is multiplied to the value present in the time column to get an actual timestamp.
 	// eg: if timesize is 5 and value in time column is 4996308 minutes. The value that will be converted
@@ -112,12 +110,11 @@ type CommonColumnSpec struct {
 	MaxLength        *int32  `json:"maxLength"`
 	// +kubebuilder:validation:Optional
 	// +kubebuilder:validation:Enum=INT;LONG;FLOAT;DOUBLE;BOOLEAN;STRING;BYTES;STRUCT;MAP;LIST
-	// +kubebuilder:default:=none
-	DataType               *string     `json:"dataType"`
-	DefaultNullValue       interface{} `json:"defaultNullValue"`
-	VirtualColumnProvider  *string     `json:"virtualColumnProvider"`
-	TransformFunction      *string     `json:"transformFunction"`
-	DefaultNullValueString *string     `json:"defaultNullValueString"`
+	DataType               *string `json:"dataType"`
+	DefaultNullValue       string  `json:"defaultNullValue"`
+	VirtualColumnProvider  *string `json:"virtualColumnProvider"`
+	TransformFunction      *string `json:"transformFunction"`
+	DefaultNullValueString *string `json:"defaultNullValueString"`
 }
 
 // SchemaStatus defines the observed state of Schema

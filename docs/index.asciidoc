@@ -16,8 +16,6 @@ Package v1alpha1 contains API Schema definitions for the operators v1alpha1 API 
 .Resource Types
 - xref:{anchor_prefix}-github-com-spaghettifunk-pinot-operator-api-pinot-v1alpha1-sortablepinotitems[$$SortablePinotItems$$]
 - xref:{anchor_prefix}-github-com-spaghettifunk-pinot-operator-api-pinot-v1alpha1-pinotlist[$$PinotList$$]
-- xref:{anchor_prefix}-github-com-spaghettifunk-pinot-operator-api-pinot-v1alpha1-schema[$$Schema$$]
-- xref:{anchor_prefix}-github-com-spaghettifunk-pinot-operator-api-pinot-v1alpha1-schemalist[$$SchemaList$$]
 - xref:{anchor_prefix}-github-com-spaghettifunk-pinot-operator-api-pinot-v1alpha1-table[$$Table$$]
 - xref:{anchor_prefix}-github-com-spaghettifunk-pinot-operator-api-pinot-v1alpha1-tablelist[$$TableList$$]
 
@@ -42,6 +40,8 @@ BrokerConfiguration defines the k8s spec configuration for the Pinot broker
 | *`service`* __xref:{anchor_prefix}-github-com-spaghettifunk-pinot-operator-api-pinot-v1alpha1-serviceresourceconfiguration[$$ServiceResourceConfiguration$$]__ | 
 | *`externalService`* __xref:{anchor_prefix}-github-com-spaghettifunk-pinot-operator-api-pinot-v1alpha1-externalserviceresourceconfiguration[$$ExternalServiceResourceConfiguration$$]__ | 
 |===
+
+
 
 
 [id="{anchor_prefix}-github-com-spaghettifunk-pinot-operator-api-pinot-v1alpha1-commonresourceconfiguration"]
@@ -102,6 +102,36 @@ ControllerConfiguration defines the k8s spec configuration for the Pinot control
 |===
 
 
+[id="{anchor_prefix}-github-com-spaghettifunk-pinot-operator-api-pinot-v1alpha1-datetimefieldspec"]
+==== DatetimeFieldSpec 
+
+DatetimeFieldSpec represents time columns in the data. There can be multiple time columns in a table, but only one of them can be treated as primary. Primary time column is the one that is present in the segment config.
+
+.Appears In:
+****
+- xref:{anchor_prefix}-github-com-spaghettifunk-pinot-operator-api-pinot-v1alpha1-schemaspec[$$SchemaSpec$$]
+****
+
+[cols="25a,75a", options="header"]
+|===
+| Field | Description
+| *`format`* __string__ | 
+| *`granularity`* __string__ | 
+|===
+
+
+[id="{anchor_prefix}-github-com-spaghettifunk-pinot-operator-api-pinot-v1alpha1-dimensionfieldspec"]
+==== DimensionFieldSpec 
+
+DimensionFieldSpec is typically used in slice and dice operations for answering business queries
+
+.Appears In:
+****
+- xref:{anchor_prefix}-github-com-spaghettifunk-pinot-operator-api-pinot-v1alpha1-schemaspec[$$SchemaSpec$$]
+****
+
+
+
 [id="{anchor_prefix}-github-com-spaghettifunk-pinot-operator-api-pinot-v1alpha1-externalserviceresourceconfiguration"]
 ==== ExternalServiceResourceConfiguration 
 
@@ -123,6 +153,18 @@ ExternalServiceResourceConfiguration defines some definition for a service resou
 |===
 
 
+[id="{anchor_prefix}-github-com-spaghettifunk-pinot-operator-api-pinot-v1alpha1-metricfieldspec"]
+==== MetricFieldSpec 
+
+MetricFieldSpec represents the quantitative data of the table. Such columns are used for aggregation. In data warehouse terminology, these can also be referred to as fact or measure columns
+
+.Appears In:
+****
+- xref:{anchor_prefix}-github-com-spaghettifunk-pinot-operator-api-pinot-v1alpha1-schemaspec[$$SchemaSpec$$]
+****
+
+
+
 [id="{anchor_prefix}-github-com-spaghettifunk-pinot-operator-api-pinot-v1alpha1-namespacedname"]
 ==== NamespacedName 
 
@@ -130,6 +172,7 @@ NamespacedName contains reference to a resource
 
 .Appears In:
 ****
+- xref:{anchor_prefix}-github-com-spaghettifunk-pinot-operator-api-pinot-v1alpha1-schemaspec[$$SchemaSpec$$]
 - xref:{anchor_prefix}-github-com-spaghettifunk-pinot-operator-api-pinot-v1alpha1-tenantspec[$$TenantSpec$$]
 ****
 
@@ -217,8 +260,6 @@ Schema is the Schema for the schemas API
 [cols="25a,75a", options="header"]
 |===
 | Field | Description
-| *`apiVersion`* __string__ | `operators.apache.io/v1alpha1`
-| *`kind`* __string__ | `Schema`
 | *`TypeMeta`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.20/#typemeta-v1-meta[$$TypeMeta$$]__ | 
 | *`metadata`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.20/#objectmeta-v1-meta[$$ObjectMeta$$]__ | Refer to Kubernetes API documentation for fields of `metadata`.
 
@@ -227,23 +268,6 @@ Schema is the Schema for the schemas API
 |===
 
 
-[id="{anchor_prefix}-github-com-spaghettifunk-pinot-operator-api-pinot-v1alpha1-schemalist"]
-==== SchemaList 
-
-SchemaList contains a list of Schema
-
-
-
-[cols="25a,75a", options="header"]
-|===
-| Field | Description
-| *`apiVersion`* __string__ | `operators.apache.io/v1alpha1`
-| *`kind`* __string__ | `SchemaList`
-| *`TypeMeta`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.20/#typemeta-v1-meta[$$TypeMeta$$]__ | 
-| *`metadata`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.20/#listmeta-v1-meta[$$ListMeta$$]__ | Refer to Kubernetes API documentation for fields of `metadata`.
-
-| *`items`* __xref:{anchor_prefix}-github-com-spaghettifunk-pinot-operator-api-pinot-v1alpha1-schema[$$Schema$$]__ | 
-|===
 
 
 [id="{anchor_prefix}-github-com-spaghettifunk-pinot-operator-api-pinot-v1alpha1-schemaspec"]
@@ -259,10 +283,33 @@ SchemaSpec defines the desired state of Schema
 [cols="25a,75a", options="header"]
 |===
 | Field | Description
-| *`foo`* __string__ | Foo is an example field of Schema. Edit Schema_types.go to remove/update
+| *`name`* __string__ | Name of the schema
+| *`primaryKeys`* __string array__ | PrimaryKeys is a list of columns that are set as primary keys
+| *`dimensions`* __xref:{anchor_prefix}-github-com-spaghettifunk-pinot-operator-api-pinot-v1alpha1-dimensionfieldspec[$$DimensionFieldSpec$$] array__ | Dimensions is a list of fields that represents the dimensions in the schema ref: https://docs.pinot.apache.org/basics/components/schema#categories
+| *`metrics`* __xref:{anchor_prefix}-github-com-spaghettifunk-pinot-operator-api-pinot-v1alpha1-metricfieldspec[$$MetricFieldSpec$$] array__ | Metrics is a list of fields that represents the metrics in the schema ref: https://docs.pinot.apache.org/basics/components/schema#categories
+| *`dateTimes`* __xref:{anchor_prefix}-github-com-spaghettifunk-pinot-operator-api-pinot-v1alpha1-datetimefieldspec[$$DatetimeFieldSpec$$] array__ | DateTimes is a list of fields that represents the datetimes in the schema ref: https://docs.pinot.apache.org/basics/components/schema#categories
+| *`timeField`* __xref:{anchor_prefix}-github-com-spaghettifunk-pinot-operator-api-pinot-v1alpha1-timefieldspec[$$TimeFieldSpec$$]__ | TimeField represents the granularity
+| *`pinotServer`* __xref:{anchor_prefix}-github-com-spaghettifunk-pinot-operator-api-pinot-v1alpha1-namespacedname[$$NamespacedName$$]__ | 
+| *`labels`* __object (keys:string, values:string)__ | 
 |===
 
 
+[id="{anchor_prefix}-github-com-spaghettifunk-pinot-operator-api-pinot-v1alpha1-schemastatus"]
+==== SchemaStatus 
+
+SchemaStatus defines the observed state of Schema
+
+.Appears In:
+****
+- xref:{anchor_prefix}-github-com-spaghettifunk-pinot-operator-api-pinot-v1alpha1-schema[$$Schema$$]
+****
+
+[cols="25a,75a", options="header"]
+|===
+| Field | Description
+| *`Status`* __ConfigState__ | 
+| *`ErrorMessage`* __string__ | 
+|===
 
 
 [id="{anchor_prefix}-github-com-spaghettifunk-pinot-operator-api-pinot-v1alpha1-serverconfiguration"]
@@ -476,6 +523,46 @@ TenantStatus defines the observed state of Tenant
 | Field | Description
 | *`Status`* __ConfigState__ | 
 | *`ErrorMessage`* __string__ | 
+|===
+
+
+[id="{anchor_prefix}-github-com-spaghettifunk-pinot-operator-api-pinot-v1alpha1-timefieldspec"]
+==== TimeFieldSpec 
+
+TimeFieldSpec represents the granularity for both ingestion and query segments
+
+.Appears In:
+****
+- xref:{anchor_prefix}-github-com-spaghettifunk-pinot-operator-api-pinot-v1alpha1-schemaspec[$$SchemaSpec$$]
+****
+
+[cols="25a,75a", options="header"]
+|===
+| Field | Description
+| *`incomingGranularity`* __xref:{anchor_prefix}-github-com-spaghettifunk-pinot-operator-api-pinot-v1alpha1-timegranularityspec[$$TimeGranularitySpec$$]__ | 
+| *`outgoingGranularity`* __xref:{anchor_prefix}-github-com-spaghettifunk-pinot-operator-api-pinot-v1alpha1-timegranularityspec[$$TimeGranularitySpec$$]__ | 
+|===
+
+
+[id="{anchor_prefix}-github-com-spaghettifunk-pinot-operator-api-pinot-v1alpha1-timegranularityspec"]
+==== TimeGranularitySpec 
+
+TimeGranularitySpec represents the granularity object
+
+.Appears In:
+****
+- xref:{anchor_prefix}-github-com-spaghettifunk-pinot-operator-api-pinot-v1alpha1-timefieldspec[$$TimeFieldSpec$$]
+****
+
+[cols="25a,75a", options="header"]
+|===
+| Field | Description
+| *`name`* __string__ | Name of the time granularity specification
+| *`dataType`* __string__ | 
+| *`typeType`* __string__ | TimeType is one of  TimeUnit enum values. e.g. HOURS , MINUTES etc. If your date is not in EPOCH format, this value is not used and can be set to MILLISECONDS or any other unit.
+| *`timeUnitSize`* __integer__ | TimeUnitSize is multiplied to the value present in the time column to get an actual timestamp. eg: if timesize is 5 and value in time column is 4996308 minutes. The value that will be converted to epoch timestamp will be 4996308 * 5 * 60 * 1000 = 1498892400000 milliseconds. If your date is not in EPOCH format, this value is not used and can be set to 1 or any other integer.
+| *`timeFormat`* __string__ | TimeFormat can be either EPOCH or SIMPLE_DATE_FORMAT. If it is SIMPLE_DATE_FORMAT, the pattern string is also specified. 
+ Here are some sample date-time formats you can use in the schema: 1:MILLISECONDS:EPOCH - used when timestamp is in the epoch milliseconds and stored in LONG format 1:HOURS:EPOCH - used when timestamp is in the epoch hours and stored in LONG  or INT format 1:DAYS:SIMPLE_DATE_FORMAT:yyyy-MM-dd - when date is in STRING format and has the pattern year-month-date. e.g. 2020-08-21 1:HOURS:SIMPLE_DATE_FORMAT:EEE MMM dd HH:mm:ss ZZZ yyyy - when date is in STRING format. e.g. s Mon Aug 24 12:36:50 America/Los_Angeles 2019
 |===
 
 
