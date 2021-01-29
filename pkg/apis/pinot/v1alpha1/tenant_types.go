@@ -57,12 +57,6 @@ type TenantStatus struct {
 	ErrorMessage string      `json:"ErrorMessage,omitempty"`
 }
 
-// NamespacedName contains reference to a resource
-type NamespacedName struct {
-	Namespace string `json:"namespace,omitempty"`
-	Name      string `json:"name,omitempty"`
-}
-
 // +genclient
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 

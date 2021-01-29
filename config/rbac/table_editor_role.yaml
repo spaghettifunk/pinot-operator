@@ -1,20 +1,24 @@
-# permissions for end users to view Tenants.
+# permissions for end users to edit tables.
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
-  name: tenant-viewer-role
+  name: table-editor-role
 rules:
 - apiGroups:
   - pinot.apache.io
   resources:
-  - tenants
+  - tables
   verbs:
+  - create
+  - delete
   - get
   - list
+  - patch
+  - update
   - watch
 - apiGroups:
   - pinot.apache.io
   resources:
-  - tenants/status
+  - tables/status
   verbs:
   - get

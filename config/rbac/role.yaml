@@ -45,7 +45,7 @@ rules:
   - update
   - watch
 - apiGroups:
-  - operators.apache.io
+  - pinot.apache.io
   resources:
   - pinots
   verbs:
@@ -55,13 +55,13 @@ rules:
   - update
   - watch
 - apiGroups:
-  - operators.apache.io
+  - pinot.apache.io
   resources:
   - pinots/finalizers
   verbs:
   - update
 - apiGroups:
-  - operators.apache.io
+  - pinot.apache.io
   resources:
   - pinots/status
   verbs:
@@ -69,7 +69,47 @@ rules:
   - patch
   - update
 - apiGroups:
-  - operators.apache.io
+  - pinot.apache.io
+  resources:
+  - schemas
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - pinot.apache.io
+  resources:
+  - schemas/status
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - pinot.apache.io
+  resources:
+  - tables
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - pinot.apache.io
+  resources:
+  - tables/status
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - pinot.apache.io
   resources:
   - tenants
   - tenants/finalizers
@@ -82,7 +122,7 @@ rules:
   - update
   - watch
 - apiGroups:
-  - operators.apache.io
+  - pinot.apache.io
   resources:
   - tenants/status
   verbs:

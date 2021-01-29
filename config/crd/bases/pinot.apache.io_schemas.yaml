@@ -1,0 +1,185 @@
+
+---
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  annotations:
+    controller-gen.kubebuilder.io/version: v0.4.0
+  creationTimestamp: null
+  name: schemas.pinot.apache.io
+spec:
+  group: pinot.apache.io
+  names:
+    kind: Schema
+    listKind: SchemaList
+    plural: schemas
+    shortNames:
+    - scs
+    singular: schema
+  scope: Namespaced
+  versions:
+  - additionalPrinterColumns:
+    - jsonPath: .spec.name
+      name: Name
+      type: string
+    - description: Error message
+      jsonPath: .status.ErrorMessage
+      name: Error
+      type: string
+    - jsonPath: .metadata.creationTimestamp
+      name: Age
+      type: date
+    - jsonPath: .spec.pinotServer
+      name: Pinot Cluster
+      type: string
+    name: v1alpha1
+    schema:
+      openAPIV3Schema:
+        properties:
+          apiVersion:
+            type: string
+          kind:
+            type: string
+          metadata:
+            type: object
+          spec:
+            properties:
+              dateTimes:
+                items:
+                  properties:
+                    format:
+                      type: string
+                    granularity:
+                      type: string
+                  required:
+                  - format
+                  - granularity
+                  type: object
+                type: array
+              dimensions:
+                items:
+                  type: object
+                type: array
+              labels:
+                additionalProperties:
+                  type: string
+                type: object
+              metrics:
+                items:
+                  type: object
+                type: array
+              name:
+                type: string
+              pinotServer:
+                properties:
+                  name:
+                    type: string
+                  namespace:
+                    type: string
+                type: object
+              primaryKeys:
+                items:
+                  type: string
+                type: array
+              timeField:
+                properties:
+                  incomingGranularity:
+                    properties:
+                      dataType:
+                        enum:
+                        - INT
+                        - LONG
+                        - FLOAT
+                        - DOUBLE
+                        - BOOLEAN
+                        - STRING
+                        - BYTES
+                        - STRUCT
+                        - MAP
+                        - LIST
+                        type: string
+                      name:
+                        type: string
+                      timeFormat:
+                        type: string
+                      timeUnitSize:
+                        format: int32
+                        type: integer
+                      typeType:
+                        enum:
+                        - NANOSECONDS
+                        - MICROSECONDS
+                        - MILLISECONDS
+                        - SECONDS
+                        - MINUTES
+                        - HOURS
+                        - DAYS
+                        type: string
+                    required:
+                    - name
+                    - timeFormat
+                    - timeUnitSize
+                    type: object
+                  outgoingGranularity:
+                    properties:
+                      dataType:
+                        enum:
+                        - INT
+                        - LONG
+                        - FLOAT
+                        - DOUBLE
+                        - BOOLEAN
+                        - STRING
+                        - BYTES
+                        - STRUCT
+                        - MAP
+                        - LIST
+                        type: string
+                      name:
+                        type: string
+                      timeFormat:
+                        type: string
+                      timeUnitSize:
+                        format: int32
+                        type: integer
+                      typeType:
+                        enum:
+                        - NANOSECONDS
+                        - MICROSECONDS
+                        - MILLISECONDS
+                        - SECONDS
+                        - MINUTES
+                        - HOURS
+                        - DAYS
+                        type: string
+                    required:
+                    - name
+                    - timeFormat
+                    - timeUnitSize
+                    type: object
+                type: object
+            required:
+            - dateTimes
+            - dimensions
+            - name
+            - primaryKeys
+            - timeField
+            type: object
+          status:
+            properties:
+              ErrorMessage:
+                type: string
+              Status:
+                type: string
+            type: object
+        type: object
+    served: true
+    storage: true
+    subresources:
+      status: {}
+status:
+  acceptedNames:
+    kind: ""
+    plural: ""
+  conditions: []
+  storedVersions: []

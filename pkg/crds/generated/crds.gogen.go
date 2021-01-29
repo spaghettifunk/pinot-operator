@@ -25,8 +25,8 @@ var CRDs = func() http.FileSystem {
 			name:    "bases",
 			modTime: time.Time{},
 		},
-		"/bases/operators.apache.io_pinots.yaml": &vfsgen۰CompressedFileInfo{
-			name:             "operators.apache.io_pinots.yaml",
+		"/bases/pinot.apache.io_pinots.yaml": &vfsgen۰CompressedFileInfo{
+			name:             "pinot.apache.io_pinots.yaml",
 			modTime:          time.Time{},
 			uncompressedSize: 179279,
 
@@ -53,7 +53,7 @@ var CRDs = func() http.FileSystem {
 		fs["/kustomizeconfig.yaml"].(os.FileInfo),
 	}
 	fs["/bases"].(*vfsgen۰DirInfo).entries = []os.FileInfo{
-		fs["/bases/operators.apache.io_pinots.yaml"].(os.FileInfo),
+		fs["/bases/pinot.apache.io_pinots.yaml"].(os.FileInfo),
 	}
 
 	return fs

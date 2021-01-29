@@ -3,7 +3,7 @@ package broker
 import (
 	"github.com/go-logr/logr"
 	"github.com/goph/emperror"
-	pinotv1alpha1 "github.com/spaghettifunk/pinot-operator/api/pinot/v1alpha1"
+	pinotv1alpha1 "github.com/spaghettifunk/pinot-operator/pkg/apis/pinot/v1alpha1"
 	"github.com/spaghettifunk/pinot-operator/pkg/k8sutil"
 	"github.com/spaghettifunk/pinot-operator/pkg/resources"
 	"sigs.k8s.io/controller-runtime/pkg/client"

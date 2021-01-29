@@ -15,7 +15,7 @@ import (
 )
 
 const (
-	detachedPodLabel = "operators.apache.io/detached-pod"
+	detachedPodLabel = "pinot.apache.io/detached-pod"
 )
 
 // DesiredState .

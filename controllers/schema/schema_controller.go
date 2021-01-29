@@ -14,29 +14,24 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package tenant
+package schema
 
 import (
 	"context"
 	"sort"
-	"strings"
 	"time"
 
+	"emperror.dev/errors"
 	"github.com/go-logr/logr"
 	"github.com/go-openapi/strfmt"
 	"github.com/gofrs/uuid"
 	"github.com/goph/emperror"
-	"github.com/pkg/errors"
-	"github.com/spaghettifunk/pinot-go-client/client/tenant"
-	"github.com/spaghettifunk/pinot-operator/pkg/k8sutil"
-	"github.com/spaghettifunk/pinot-operator/pkg/sdk"
-	"github.com/spaghettifunk/pinot-operator/pkg/util"
-
+	pinotsdk "github.com/spaghettifunk/pinot-go-client/client"
+	"github.com/spaghettifunk/pinot-go-client/client/schema"
+	k8serrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
-
-	k8serrors "k8s.io/apimachinery/pkg/api/errors"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller"
@@ -45,18 +40,17 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 	"sigs.k8s.io/controller-runtime/pkg/source"
 
-	pinotsdk "github.com/spaghettifunk/pinot-go-client/client"
-	"github.com/spaghettifunk/pinot-go-client/models"
 	operatorsv1alpha1 "github.com/spaghettifunk/pinot-operator/pkg/apis/pinot/v1alpha1"
+	"github.com/spaghettifunk/pinot-operator/pkg/k8sutil"
+	"github.com/spaghettifunk/pinot-operator/pkg/sdk"
+	"github.com/spaghettifunk/pinot-operator/pkg/util"
 	logf "sigs.k8s.io/controller-runtime/pkg/runtime/log"
 )
 
 var log = logf.Log.WithName("controller")
 
 const (
-	finalizerID = "pinot-tenant.finalizer.apache.io"
-	brokerRole  = "BROKER"
-	serverRole  = "SERVER"
+	finalizerID = "pinot-schema.finalizer.apache.io"
 )
 
 func Add(mgr manager.Manager) error {
@@ -65,7 +59,7 @@ func Add(mgr manager.Manager) error {
 
 // newReconciler returns a new reconcile.Reconciler
 func newReconciler(mgr manager.Manager) reconcile.Reconciler {
-	return &ReconcilerTenant{
+	return &ReconcilerSchema{
 		Client: mgr.GetClient(),
 		Scheme: mgr.GetScheme(),
 	}
@@ -74,43 +68,43 @@ func newReconciler(mgr manager.Manager) reconcile.Reconciler {
 // add adds a new Controller to mgr with r as the reconcile.Reconciler
 func add(mgr manager.Manager, r reconcile.Reconciler) error {
 	// Create a new controller
-	c, err := controller.New("tenants-controller", mgr, controller.Options{Reconciler: r})
+	c, err := controller.New("schemas-controller", mgr, controller.Options{Reconciler: r})
 	if err != nil {
 		return err
 	}
 
-	// Watch for changes to Tenant
-	err = c.Watch(&source.Kind{Type: &operatorsv1alpha1.Tenant{
+	// Watch for changes to Schema
+	err = c.Watch(&source.Kind{Type: &operatorsv1alpha1.Schema{
 		TypeMeta: metav1.TypeMeta{
-			Kind:       "Tenant",
+			Kind:       "Schema",
 			APIVersion: "pinot.apache.io/v1alpha1",
 		},
 	},
-	}, &handler.EnqueueRequestForObject{}, k8sutil.GetWatchPredicateForTenant())
+	}, &handler.EnqueueRequestForObject{}, k8sutil.GetWatchPredicateForSchema())
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-var _ reconcile.Reconciler = &ReconcilerTenant{}
+var _ reconcile.Reconciler = &ReconcilerSchema{}
 
-// ReconcilerTenant reconciles a Tenant object
-type ReconcilerTenant struct {
+// ReconcilerSchema reconciles a Schema object
+type ReconcilerSchema struct {
 	client.Client
 	Log         logr.Logger
 	Scheme      *runtime.Scheme
 	PinotClient *pinotsdk.PinotSdk
 }
 
-// +kubebuilder:rbac:groups=pinot.apache.io,resources=tenants;tenants/finalizers,verbs=get;list;watch;create;update;patch;delete
-// +kubebuilder:rbac:groups=pinot.apache.io,resources=tenants/status,verbs=get;update;patch
+// +kubebuilder:rbac:groups=pinot.apache.io,resources=schemas,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups=pinot.apache.io,resources=schemas/status,verbs=get;update;patch
 
-func (r *ReconcilerTenant) Reconcile(request ctrl.Request) (ctrl.Result, error) {
+func (r *ReconcilerSchema) Reconcile(request ctrl.Request) (ctrl.Result, error) {
 	logger := log.WithValues("trigger", request.Namespace+"/"+request.Name, "correlationID", uuid.Must(uuid.NewV4()).String())
 
-	// Fetch the Tenant instance
-	config := &operatorsv1alpha1.Tenant{}
+	// Fetch the Schema instance
+	config := &operatorsv1alpha1.Schema{}
 	err := r.Get(context.TODO(), request.NamespacedName, config)
 	if err != nil {
 		if k8serrors.IsNotFound(err) {
@@ -119,14 +113,15 @@ func (r *ReconcilerTenant) Reconcile(request ctrl.Request) (ctrl.Result, error) 
 		return reconcile.Result{}, err
 	}
 
-	logger.Info("Validating Tenant")
+	logger.Info("Validating Schema")
 
-	if err := r.validateTenant(logger, config); err != nil {
-		logger.Error(err, "tenant validation failed")
+	// TODO: use webhook instead of manual validation
+	if err := r.validateSchema(logger, config); err != nil {
+		logger.Error(err, "schema validation failed")
 		return reconcile.Result{}, errors.WithStack(err)
 	}
 
-	logger.Info("Reconciling Tenant")
+	logger.Info("Reconciling Schema")
 
 	pinot, err := r.getRelatedPinotCR(config)
 	if err != nil {
@@ -157,12 +152,12 @@ func (r *ReconcilerTenant) Reconcile(request ctrl.Request) (ctrl.Result, error) 
 			logger.Error(updateErr, "failed to update state")
 			return result, errors.WithStack(err)
 		}
-		return result, emperror.Wrap(err, "could not reconcile Tenant")
+		return result, emperror.Wrap(err, "could not reconcile Schema")
 	}
 	return result, nil
 }
 
-func (r *ReconcilerTenant) getRelatedPinotCR(instance *operatorsv1alpha1.Tenant) (*operatorsv1alpha1.Pinot, error) {
+func (r *ReconcilerSchema) getRelatedPinotCR(instance *operatorsv1alpha1.Schema) (*operatorsv1alpha1.Pinot, error) {
 	pinot := &operatorsv1alpha1.Pinot{}
 
 	// try to get specified Pinot CR
@@ -199,7 +194,52 @@ func (r *ReconcilerTenant) getRelatedPinotCR(instance *operatorsv1alpha1.Tenant)
 	return &config, nil
 }
 
-func (r *ReconcilerTenant) reconcile(logger logr.Logger, config *operatorsv1alpha1.Tenant) (reconcile.Result, error) {
+func updateStatus(c client.Client, instance *operatorsv1alpha1.Schema, status operatorsv1alpha1.ConfigState, errorMessage string, logger logr.Logger) error {
+	typeMeta := instance.TypeMeta
+	instance.Status.Status = status
+	instance.Status.ErrorMessage = errorMessage
+
+	err := c.Status().Update(context.Background(), instance)
+	if k8serrors.IsNotFound(err) {
+		err = c.Update(context.Background(), instance)
+	}
+	if err != nil {
+		if !k8serrors.IsConflict(err) {
+			return emperror.Wrapf(err, "could not update schema state to '%s'", status)
+		}
+		var actualInstance operatorsv1alpha1.Schema
+		err := c.Get(context.TODO(), types.NamespacedName{
+			Namespace: instance.Namespace,
+			Name:      instance.Name,
+		}, &actualInstance)
+		if err != nil {
+			return emperror.Wrap(err, "could not get resource for updating status")
+		}
+		actualInstance.Status.Status = status
+		actualInstance.Status.ErrorMessage = errorMessage
+		err = c.Status().Update(context.Background(), &actualInstance)
+		if k8serrors.IsNotFound(err) {
+			err = c.Update(context.Background(), &actualInstance)
+		}
+		if err != nil {
+			return emperror.Wrapf(err, "could not update schema state to '%s'", status)
+		}
+	}
+
+	// update loses the typeMeta of the instace that's used later when setting ownerrefs
+	instance.TypeMeta = typeMeta
+	logger.Info("schema state updated", "status", status)
+
+	return nil
+}
+
+func (r *ReconcilerSchema) validateSchema(logger logr.Logger, config *operatorsv1alpha1.Schema) error {
+	// TODO: validation using the Pinot APIs is really complex and no documentation is available.
+	// The APIs are quite inconsistent which makes it difficult to use
+	return nil
+}
+
+func (r *ReconcilerSchema) reconcile(logger logr.Logger, config *operatorsv1alpha1.Schema) (reconcile.Result, error) {
 	if config.Status.Status == "" {
 		err := updateStatus(r.Client, config, operatorsv1alpha1.Created, "", logger)
 		if err != nil {
@@ -222,11 +262,11 @@ func (r *ReconcilerTenant) reconcile(logger logr.Logger, config *operatorsv1alph
 		// Deletion timestamp set, config is marked for deletion
 		if util.ContainsString(config.ObjectMeta.Finalizers, finalizerID) {
 			if config.Status.Status == operatorsv1alpha1.Reconciling && config.Status.ErrorMessage == "" {
-				logger.Info("cannot remove Tenant while reconciling")
+				logger.Info("cannot remove Schema while reconciling")
 				return reconcile.Result{}, nil
 			}
-			if err := r.deleteTenantResources(config); err != nil {
-				return ctrl.Result{}, emperror.Wrap(err, "could not remove tenant")
+			if err := r.deleteSchemaResources(config); err != nil {
+				return ctrl.Result{}, emperror.Wrap(err, "could not remove schema")
 			}
 
 			config.ObjectMeta.Finalizers = util.RemoveString(config.ObjectMeta.Finalizers, finalizerID)
@@ -234,7 +274,7 @@ func (r *ReconcilerTenant) reconcile(logger logr.Logger, config *operatorsv1alph
 				return reconcile.Result{}, emperror.Wrap(err, "could not remove finalizer from config")
 			}
 		}
-		logger.Info("Tenant removed")
+		logger.Info("Schema removed")
 		return reconcile.Result{}, nil
 	}
 
@@ -243,8 +283,8 @@ func (r *ReconcilerTenant) reconcile(logger logr.Logger, config *operatorsv1alph
 		return reconcile.Result{}, errors.WithStack(err)
 	}
 
-	// upsert tenant
-	if err := r.upsertTenantResource(config); err != nil {
+	// upsert schema
+	if err := r.upsertSchemaResource(config); err != nil {
 		return reconcile.Result{}, errors.WithStack(err)
 	}
 
@@ -255,106 +295,43 @@ func (r *ReconcilerTenant) reconcile(logger logr.Logger, config *operatorsv1alph
 	return reconcile.Result{}, nil
 }
 
-func (r *ReconcilerTenant) validateTenant(logger logr.Logger, config *operatorsv1alpha1.Tenant) error {
-	var err error
-	switch strings.ToUpper(config.Spec.Role) {
-	case brokerRole:
-		if util.PointerToInt32(config.Spec.OfflineInstances) > 0 || util.PointerToInt32(config.Spec.RealtimeInstances) > 0 {
-			err = errors.New("Tenant of type BROKER cannot have 'offline' or 'realtime' instances")
-		}
-	case serverRole:
-		if util.PointerToInt32(config.Spec.NumberOfInstances) > 0 {
-			err = errors.New("Tenant of type SERVER cannot have 'numberOfInstances' set")
-		}
-	default:
-		err = errors.New("unknown role type")
-	}
-	return err
-}
+func (r *ReconcilerSchema) upsertSchemaResource(config *operatorsv1alpha1.Schema) error {
+	ctx := context.Background()
 
-func updateStatus(c client.Client, instance *operatorsv1alpha1.Tenant, status operatorsv1alpha1.ConfigState, errorMessage string, logger logr.Logger) error {
-	typeMeta := instance.TypeMeta
-	instance.Status.Status = status
-	instance.Status.ErrorMessage = errorMessage
-
-	err := c.Status().Update(context.Background(), instance)
-	if k8serrors.IsNotFound(err) {
-		err = c.Update(context.Background(), instance)
-	}
-	if err != nil {
-		if !k8serrors.IsConflict(err) {
-			return emperror.Wrapf(err, "could not update tenant state to '%s'", status)
-		}
-		var actualInstance operatorsv1alpha1.Tenant
-		err := c.Get(context.TODO(), types.NamespacedName{
-			Namespace: instance.Namespace,
-			Name:      instance.Name,
-		}, &actualInstance)
-		if err != nil {
-			return emperror.Wrap(err, "could not get resource for updating status")
-		}
-		actualInstance.Status.Status = status
-		actualInstance.Status.ErrorMessage = errorMessage
-		err = c.Status().Update(context.Background(), &actualInstance)
-		if k8serrors.IsNotFound(err) {
-			err = c.Update(context.Background(), &actualInstance)
-		}
-		if err != nil {
-			return emperror.Wrapf(err, "could not update tenant state to '%s'", status)
-		}
-	}
-
-	// update loses the typeMeta of the instace that's used later when setting ownerrefs
-	instance.TypeMeta = typeMeta
-	logger.Info("tenant state updated", "status", status)
-
-	return nil
-}
-
-func (r *ReconcilerTenant) upsertTenantResource(config *operatorsv1alpha1.Tenant) error {
-	role := strings.ToUpper(config.Spec.Role)
-
-	// get tenant metadata
-	res, err := r.PinotClient.Tenant.GetTenantMetadata(&tenant.GetTenantMetadataParams{
-		Type:    util.StrPointer(role),
-		Context: context.Background(),
+	// get schema
+	_, err := r.PinotClient.Schema.GetSchema(&schema.GetSchemaParams{
+		SchemaName: config.Spec.Name,
+		Context:    ctx,
 	})
-	if _, ok := err.(*tenant.GetTenantMetadataNotFound); !ok {
+	if _, ok := err.(*schema.GetSchemaNotFound); ok {
+		// create schema
+		_, err := r.PinotClient.Schema.AddSchema(&schema.AddSchemaParams{
+			Body:     sdk.ConvertCRDSchemaToSDKSchema(config),
+			Override: util.BoolPointer(true),
+			Context:  ctx,
+		})
 		return err
 	}
+	// TODO: not the best solution. The problem is that the apache pinot APIs for updating/validating a schema
+	// are very inconsistent and difficult to use. For now, this helps in moving on. Not sure about the
+	// implications if data is already present in a table
 
-	// if tenant exists, update it
-	if res != nil && (len(res.Payload.BrokerInstances) > 0 || len(res.Payload.ServerInstances) > 0) {
-		_, err = r.PinotClient.Tenant.UpdateTenant(&tenant.UpdateTenantParams{
-			Body: &models.Tenant{
-				TenantRole:        role,
-				TenantName:        config.Spec.Name,
-				NumberOfInstances: util.PointerToInt32(config.Spec.NumberOfInstances),
-				OfflineInstances:  util.PointerToInt32(config.Spec.OfflineInstances),
-				RealtimeInstances: util.PointerToInt32(config.Spec.RealtimeInstances),
-			},
-			Context: context.Background(),
-		})
-	} else {
-		// create the new tenant
-		_, err = r.PinotClient.Tenant.CreateTenant(&tenant.CreateTenantParams{
-			Body: &models.Tenant{
-				TenantRole:        role,
-				TenantName:        config.Spec.Name,
-				NumberOfInstances: util.PointerToInt32(config.Spec.NumberOfInstances),
-				OfflineInstances:  util.PointerToInt32(config.Spec.OfflineInstances),
-				RealtimeInstances: util.PointerToInt32(config.Spec.RealtimeInstances),
-			},
-			Context: context.Background(),
-		})
+	// delete and create new schema
+	if err := r.deleteSchemaResources(config); err != nil {
+		return emperror.Wrap(err, "could not update Schema resource")
 	}
+	// create schema
+	_, err = r.PinotClient.Schema.AddSchema(&schema.AddSchemaParams{
+		Body:     sdk.ConvertCRDSchemaToSDKSchema(config),
+		Override: util.BoolPointer(true),
+		Context:  ctx,
+	})
 	return err
 }
 
-func (r *ReconcilerTenant) deleteTenantResources(config *operatorsv1alpha1.Tenant) error {
-	_, err := r.PinotClient.Tenant.DeleteTenant(&tenant.DeleteTenantParams{
-		TenantName: config.Spec.Name,
-		Type:       strings.ToUpper(config.Spec.Role),
+func (r *ReconcilerSchema) deleteSchemaResources(config *operatorsv1alpha1.Schema) error {
+	_, err := r.PinotClient.Schema.DeleteSchema(&schema.DeleteSchemaParams{
+		SchemaName: config.Spec.Name,
 		Context:    context.Background(),
 	})
 	return err
@@ -362,14 +339,14 @@ func (r *ReconcilerTenant) deleteTenantResources(config *operatorsv1alpha1.Tenan
 
 // RemoveFinalizers removes the finalizers from the context
 func RemoveFinalizers(c client.Client) error {
-	var tenants operatorsv1alpha1.TenantList
-	for _, tenant := range tenants.Items {
-		tenant.ObjectMeta.Finalizers = util.RemoveString(tenant.ObjectMeta.Finalizers, finalizerID)
-		if err := c.Update(context.Background(), &tenant); err != nil {
-			return emperror.WrapWith(err, "could not remove finalizer from Tenant resource", "name", tenant.GetName())
+	var schemas operatorsv1alpha1.SchemaList
+	for _, schema := range schemas.Items {
+		schema.ObjectMeta.Finalizers = util.RemoveString(schema.ObjectMeta.Finalizers, finalizerID)
+		if err := c.Update(context.Background(), &schema); err != nil {
+			return emperror.WrapWith(err, "could not remove finalizer from Schema resource", "name", schema.GetName())
 		}
-		if err := updateStatus(c, &tenant, operatorsv1alpha1.Unmanaged, "", log); err != nil {
-			return emperror.Wrap(err, "could not update status of Tenant resource")
+		if err := updateStatus(c, &schema, operatorsv1alpha1.Unmanaged, "", log); err != nil {
+			return emperror.Wrap(err, "could not update status of Schema resource")
 		}
 	}
 	return nil

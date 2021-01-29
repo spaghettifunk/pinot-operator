@@ -1,4 +1,4 @@
-apiVersion: operators.apache.io/v1alpha1
+apiVersion: pinot.apache.io/v1alpha1
 kind: Pinot
 metadata:
   name: pinot-sample
@@ -7,6 +7,6 @@ spec:
   clusterName: pinot-cluster
   version: "0.6.0"
   server:
-    replicaCount: 2
+    replicaCount: 1
   zookeeper:
-    replicaCount: 3
+    replicaCount: 1

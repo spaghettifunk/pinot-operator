@@ -26,7 +26,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/predicate"
 
 	"github.com/banzaicloud/k8s-objectmatcher/patch"
-	pinotv1alpha1 "github.com/spaghettifunk/pinot-operator/api/pinot/v1alpha1"
+	pinotv1alpha1 "github.com/spaghettifunk/pinot-operator/pkg/apis/pinot/v1alpha1"
 	"github.com/spaghettifunk/pinot-operator/pkg/k8sutil"
 	pinot_crds "github.com/spaghettifunk/pinot-operator/pkg/manifests/pinot-crds/generated"
 	"github.com/spaghettifunk/pinot-operator/pkg/util"

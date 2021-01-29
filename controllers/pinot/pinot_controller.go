@@ -43,7 +43,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 
-	pinotv1alpha1 "github.com/spaghettifunk/pinot-operator/api/pinot/v1alpha1"
+	pinotv1alpha1 "github.com/spaghettifunk/pinot-operator/pkg/apis/pinot/v1alpha1"
 	"github.com/spaghettifunk/pinot-operator/pkg/resources"
 	"github.com/spaghettifunk/pinot-operator/pkg/util"
 )
@@ -130,9 +130,9 @@ type ReconcilePinot struct {
 type ReconcileComponent func(log logr.Logger, pinot *pinotv1alpha1.Pinot) error
 
 // the rbac rule requires an empty row at the end to render
-// +kubebuilder:rbac:groups=operators.apache.io,resources=pinots,verbs=get;list;watch;create;update
-// +kubebuilder:rbac:groups=operators.apache.io,resources=pinots/status,verbs=get;update;patch
-// +kubebuilder:rbac:groups=operators.apache.io,resources=pinots/finalizers,verbs=update
+// +kubebuilder:rbac:groups=pinot.apache.io,resources=pinots,verbs=get;list;watch;create;update
+// +kubebuilder:rbac:groups=pinot.apache.io,resources=pinots/status,verbs=get;update;patch
+// +kubebuilder:rbac:groups=pinot.apache.io,resources=pinots/finalizers,verbs=update
 // +kubebuilder:rbac:groups=operators,resources=configmaps;statefulsets;services;secrets;poddisruptionbudgets,verbs=get;list;watch;create;update;delete
 // +kubebuilder:rbac:groups=policy;apps,resources=poddisruptionbudgets;statefulsets,verbs=*
 // +kubebuilder:rbac:groups="",resources=events;statefulsets;configmaps;services;poddisruptionbudgets,verbs=get;list;watch;create;update;delete

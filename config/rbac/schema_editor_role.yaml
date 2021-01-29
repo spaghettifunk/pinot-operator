@@ -1,20 +1,24 @@
-# permissions for end users to view Tenants.
+# permissions for end users to edit schemas.
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
-  name: tenant-viewer-role
+  name: schema-editor-role
 rules:
 - apiGroups:
   - pinot.apache.io
   resources:
-  - tenants
+  - schemas
   verbs:
+  - create
+  - delete
   - get
   - list
+  - patch
+  - update
   - watch
 - apiGroups:
   - pinot.apache.io
   resources:
-  - tenants/status
+  - schemas/status
   verbs:
   - get
