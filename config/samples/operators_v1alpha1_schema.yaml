@@ -1,0 +1,7 @@
+apiVersion: pinot.apache.io/v1alpha1
+kind: Schema
+metadata:
+  name: schema-sample
+spec:
+  # Add fields here
+  foo: bar

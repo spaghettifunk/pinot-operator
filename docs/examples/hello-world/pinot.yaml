@@ -1,0 +1,12 @@
+apiVersion: pinot.apache.io/v1alpha1
+kind: Pinot
+metadata:
+  name: pinot-sample
+  namespace: pinot-system
+spec:  
+  clusterName: pinot-cluster
+  version: "0.6.0"
+  server:
+    replicaCount: 1
+  zookeeper:
+    replicaCount: 1

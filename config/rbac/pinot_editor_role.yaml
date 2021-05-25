@@ -1,0 +1,24 @@
+# permissions for end users to edit pinots.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: pinot-editor-role
+rules:
+- apiGroups:
+  - pinot.apache.io
+  resources:
+  - pinots
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - pinot.apache.io
+  resources:
+  - pinots/status
+  verbs:
+  - get

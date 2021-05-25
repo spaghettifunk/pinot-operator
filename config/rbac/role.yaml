@@ -1,0 +1,151 @@
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  creationTimestamp: null
+  name: operator-role
+rules:
+- apiGroups:
+  - ""
+  resources:
+  - configmaps
+  - events
+  - poddisruptionbudgets
+  - services
+  - statefulsets
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - update
+  - watch
+- apiGroups:
+  - apps
+  - policy
+  resources:
+  - poddisruptionbudgets
+  - statefulsets
+  verbs:
+  - '*'
+- apiGroups:
+  - operators
+  resources:
+  - configmaps
+  - poddisruptionbudgets
+  - secrets
+  - services
+  - statefulsets
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - update
+  - watch
+- apiGroups:
+  - pinot.apache.io
+  resources:
+  - pinots
+  verbs:
+  - create
+  - get
+  - list
+  - update
+  - watch
+- apiGroups:
+  - pinot.apache.io
+  resources:
+  - pinots/finalizers
+  verbs:
+  - update
+- apiGroups:
+  - pinot.apache.io
+  resources:
+  - pinots/status
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - pinot.apache.io
+  resources:
+  - schemas
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - pinot.apache.io
+  resources:
+  - schemas/status
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - pinot.apache.io
+  resources:
+  - tables
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - pinot.apache.io
+  resources:
+  - tables/status
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - pinot.apache.io
+  resources:
+  - tenants
+  - tenants/finalizers
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - pinot.apache.io
+  resources:
+  - tenants/status
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - rbac.authorization.k8s.io
+  resources:
+  - rolebindings
+  verbs:
+  - create
+  - get
+  - list
+  - update
+  - watch
+- apiGroups:
+  - rbac.authorization.k8s.io
+  resources:
+  - roles
+  verbs:
+  - create
+  - get
+  - list
+  - update
+  - watch
