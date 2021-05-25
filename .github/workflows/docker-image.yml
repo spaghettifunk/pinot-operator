@@ -26,4 +26,4 @@ jobs:
         with:
           push: true
           tags: |
-            docker.pkg.github.com/${{ github.repository }}:latest
+            docker.pkg.github.com/spaghettifunk/pinot-operator:latest
